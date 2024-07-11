@@ -24,12 +24,12 @@ export default class Renderer {
         this.camera = new THREE.PerspectiveCamera(
             75, // fov
             window.innerWidth / window.innerHeight, // aspectRatio
-            0.1, // near
-            1000 // far
+            2, // near
+            75 // far
         );
         this.camera.position.set(
             0,
-            -5,
+            -10.5,
             5
         );
 
@@ -45,7 +45,7 @@ export default class Renderer {
 
     addLights() {
         // Ambient light
-        const ambientLight = new THREE.AmbientLight(0x404040, 1.5); // color, intensity
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.5); // color, intensity
         this.scene.add(ambientLight);
 
         // // Directional light
@@ -53,10 +53,10 @@ export default class Renderer {
         // directionalLight.position.set(5, 10, 7.5);
         // this.scene.add(directionalLight);
 
-        // // Point light
-        // const pointLight = new THREE.PointLight(0xffffff, 1, 100); // color, intensity, distance
-        // pointLight.position.set(0, 10, 10);
-        // this.scene.add(pointLight);
+        // Point light
+        const pointLight = new THREE.PointLight(0xffffff, 1, 100); // color, intensity, distance
+        pointLight.position.set(0, 10, 10);
+        this.scene.add(pointLight);
     }
 
     onWindowResize() {
