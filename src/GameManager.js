@@ -1,8 +1,8 @@
 import Renderer from './Renderer.js';
+import Fretboard from './Fretboard.js';
 import AudioManager from './AudioManager.js';
 import NoteManager from './NoteManager.js';
 import InputManager from './InputManager.js';
-import Fretboard from './Fretboard.js';
 import Stats from 'stats.js';
 
 export default class GameManager {
@@ -11,7 +11,7 @@ export default class GameManager {
         // this.audioManager = new AudioManager();
         // this.noteManager = new NoteManager();
         // this.inputManager = new InputManager();
-        this.fretboard = new Fretboard();
+        this.fretboard = new Fretboard(5);
         this.fretboard.addToScene(this.renderer.scene);
     
         // Initialize Stats.js
