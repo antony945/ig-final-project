@@ -10,14 +10,15 @@ const renderer = new THREE.WebGLRenderer({
 });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio > 1 ? 2 : 1);
+renderer.setAnimationLoop(animate);
 
 // Scene
 const scene = new THREE.Scene();
-scene.background = new THREE.Color('white');
+scene.background = new THREE.Color('black');
 
 // Camera
 const camera = new THREE.PerspectiveCamera(
-  75,
+  100,
   window.innerWidth / window.innerHeight,
   0.1,
   1000
@@ -56,14 +57,14 @@ gltfLoader.load(
   }
 );
 
-// Draw
+// animate
 const clock = new THREE.Clock();
 
-function draw() {
+function animate() {
   const delta = clock.getDelta();
+  console.log(delta)
 
   renderer.render(scene, camera);
-  renderer.setAnimationLoop(draw);
 }
 
 function setSize() {
@@ -75,5 +76,3 @@ function setSize() {
 
 // Event
 window.addEventListener('resize', setSize);
-
-draw();
