@@ -13,7 +13,7 @@ export default class GameManager {
         // this.inputManager = new InputManager();
 
         this.fretboard = new Fretboard(5, true);
-        this.fretboard.addNoteToLane(0);
+        // this.fretboard.addNoteToLane(0);
         // this.fretboard.addNoteToLane(1);
         // this.fretboard.addNoteToLane(2);
         // this.fretboard.addNoteToLane(3);

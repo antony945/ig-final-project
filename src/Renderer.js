@@ -24,12 +24,12 @@ export default class Renderer {
         this.camera = new THREE.PerspectiveCamera(
             75, // fov
             window.innerWidth / window.innerHeight, // aspectRatio
-            2, // near
-            75 // far
+            0.1, // near
+            100 // far
         );
         this.camera.position.set(
             0,
-            -10.5,
+            -10,
             5
         );
 

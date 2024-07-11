@@ -4,10 +4,19 @@ import Lane from './Lane.js';
 export default class Fretboard {
     constructor(numLanes, asLines=true) {
         this.geometry = new THREE.PlaneGeometry(5, 15);
-        this.material = new THREE.MeshBasicMaterial({ color: 0x696969, wireframe: false });
+        this.material = new THREE.MeshPhongMaterial(
+            {
+                color: 0xffffff,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: .6
+            }
+        );
+
         this.mesh = new THREE.Mesh(this.geometry, this.material);
+        // this.mesh.rotateX(-10);
         this.mesh.position.y = 0; // Move the fretboard back so the notes can be in front of it
-        this.mesh.position.z = -0.1; // Move the fretboard back so the notes can be in front of it
+        this.mesh.position.z = -0.01; // Move the fretboard back so the notes can be in front of it
 
         // Create lanes
         this.createLanes(numLanes, asLines);
