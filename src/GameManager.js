@@ -11,8 +11,16 @@ export default class GameManager {
         // this.audioManager = new AudioManager();
         // this.noteManager = new NoteManager();
         // this.inputManager = new InputManager();
-        this.fretboard = new Fretboard(5);
+
+        this.fretboard = new Fretboard(5, true);
+        this.fretboard.addNoteToLane(0);
+        this.fretboard.addNoteToLane(1);
+        this.fretboard.addNoteToLane(2);
+        this.fretboard.addNoteToLane(3);
+        this.fretboard.addNoteToLane(4);
+
         this.fretboard.addToScene(this.renderer.scene);
+
     
         // Initialize Stats.js
         this.stats = new Stats();
@@ -29,6 +37,8 @@ export default class GameManager {
         this.stats.begin(); // Begin measuring FPS
         // this.noteManager.update();
         // this.inputManager.checkInput();
+        this.fretboard.update(); // Update lanes and notes
+
         this.renderer.render();
         this.stats.end(); // End measuring FPS
         requestAnimationFrame(this.gameLoop.bind(this));

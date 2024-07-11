@@ -1,49 +1,41 @@
 import * as THREE from 'three';
+import Lane from './Lane.js';
 
 export default class Fretboard {
-    constructor(numLanes) {
-        this.numLanes = numLanes;
+    constructor(numLanes, asLines=true) {
         this.geometry = new THREE.PlaneGeometry(5, 20);
-        this.material = new THREE.MeshBasicMaterial({ color: 0x00ffff, wireframe: true });
+        this.material = new THREE.MeshBasicMaterial({ color: 0x696969, wireframe: false });
         this.mesh = new THREE.Mesh(this.geometry, this.material);
         this.mesh.position.z = -0.1; // Move the fretboard back so the notes can be in front of it
 
         // Create lanes
-        this.createLanes();
+        this.createLanes(numLanes, asLines);
     }
 
-    createLanes() {
-        this.lanes = [];
-        
+    createLanes(numLanes, asLines=true) {
+        this.numLanes = numLanes;
         this.laneWidth = this.geometry.parameters.width / this.numLanes; // Width of each lane
+        this.laneHeight = this.geometry.parameters.height;
 
-
-        this.laneHeight = this.geometry.parameters.height / this.numLanes;
-        this.laneSpacing = 1; // Spacing between lanes
-
-        for (let i = 0; i < this.numLanes; i++) {
-            const laneGeometry = new THREE.PlaneGeometry(this.laneWidth, this.geometry.parameters.height);
-            const laneMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true }); // Adjust color as needed
-            const laneMesh = new THREE.Mesh(laneGeometry, laneMaterial);
-            laneMesh.position.set(
-                -(this.geometry.parameters.width/2) + (this.laneWidth / 2) + i * this.laneWidth,
-                0,
-                0
-            )
-
-            // Set position
-            // laneMesh.position.set(
-            //     -(this.geometry.parameters.width / 2) + (this.laneWidth / 2), 
-            //     (i + 0.5) * laneHeight - (this.geometry.parameters.height / 2), 
-            //     0
-            // );
-            this.lanes.push(laneMesh);
-            // break;
+        // Create lanes
+        this.lanes = [];
+        for (let i = 0; i < numLanes; i++) {
+            const lane = new Lane(i, this.laneWidth, this.laneHeight, this.geometry, asLines);
+            this.lanes.push(lane);
         }
+    }
+
+    addNoteToLane(laneIndex) {
+        const note = this.lanes[laneIndex].addNote();
+        return note.mesh;
     }
 
     addToScene(scene) {
         scene.add(this.mesh);
-        this.lanes.forEach(lane => scene.add(lane));
+        this.lanes.forEach(lane => lane.addToScene(scene));
+    }
+
+    update() {
+        this.lanes.forEach(lane => lane.update());
     }
 }
