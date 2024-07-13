@@ -9,3 +9,4 @@ Repository for final project of Interactive Graphics course.
 - https://github.com/TheNathannator/GuitarGame_ChartFormats/tree/main
 - https://github.com/colxi/midi-parser-js
 - https://github.com/Tonejs/Midi
+- https://sketchfab.com/3d-models/fretboard-1-b0b028c770334e429b552f253ceba80b#download

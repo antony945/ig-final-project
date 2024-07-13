@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 
 export default class Note {
-    constructor(lane_x, laneWidth, laneHeight, color) {
+    constructor(lane_x, noteRadius, laneWidth, laneHeight, color) {
+        this.noteRadius = noteRadius;
         this.laneWidth = laneWidth;
 
         this.x = lane_x
@@ -12,7 +13,7 @@ export default class Note {
         this.color = color;
 
         // Create the geometry and material for the note
-        this.geometry = new THREE.SphereGeometry(this.laneWidth / 4, 32, 32);
+        this.geometry = new THREE.SphereGeometry(this.noteRadius, 32, 32);
         this.material = new THREE.MeshBasicMaterial({ color: this.color });
         this.mesh = new THREE.Mesh(this.geometry, this.material);
 

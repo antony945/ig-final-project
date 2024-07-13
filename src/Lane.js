@@ -2,18 +2,12 @@ import * as THREE from 'three';
 import Note from './Note.js';
 
 export default class Lane {
-    constructor(index, laneWidth, laneHeight, fretGeometry, asLines=true) {
+    constructor(index, laneWidth, laneHeight, fretGeometry, colors, asLines=true) {
         this.index = index;
         this.notes = [];
         this.laneWidth = laneWidth;
         this.laneHeight = laneHeight;
-        this.colors = {
-            0: 0x00ff00,
-            1: 0xff0000,
-            2: 0xffff00,
-            3: 0x0000ff,
-            4: 0xffa500
-        }; // Green, Red, Yellow, Blue, Orange
+        this.colors = colors;
 
         // Starting offset of lane
         this.lane_x = -(fretGeometry.parameters.width/2) + (this.laneWidth / 2) + this.index * this.laneWidth
@@ -69,7 +63,7 @@ export default class Lane {
 
     addNote() {
         // Add a note to this lane
-        const note = new Note(this.lane_x, this.laneWidth, this.laneHeight, this.colors[this.index]);
+        const note = new Note(this.lane_x, this.laneWidth/4, this.laneWidth, this.laneHeight, this.colors[this.index]);
         this.notes.push(note);
         return note;
     }
