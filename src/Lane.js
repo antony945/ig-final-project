@@ -18,15 +18,11 @@ export default class Lane {
         // Starting offset of lane
         this.lane_x = -(fretGeometry.parameters.width/2) + (this.laneWidth / 2) + this.index * this.laneWidth
 
-
         if (asLines) {
             this.createLineLane()
         } else {
             this.createPlaneLane()
         }
-
-        // this.mesh.rotateX(-10);
-
     }
 
     createPlaneLane() {

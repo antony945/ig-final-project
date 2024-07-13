@@ -8,6 +8,7 @@
     "vite": "^5.3.3"
   },
   "dependencies": {
+    "dat.gui": "^0.7.9",
     "stats.js": "^0.17.0",
     "three": "^0.166.1"
   }
