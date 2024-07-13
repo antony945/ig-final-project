@@ -17,7 +17,7 @@ export default class GameManager {
         // this.inputManager = new InputManager();
 
         // Create fretboard
-        this.fretboard = new Fretboard(5, true);
+        this.fretboard = new Fretboard(5, 15, 5, true);
         this.fretboard.addToScene(this.scene);
 
         // Load note
@@ -119,7 +119,7 @@ export default class GameManager {
         cameraFolder.add(this.camera.position, 'y', -100, 100).name('Y Position');
         cameraFolder.add(this.camera.position, 'z', -100, 100).name('Z Position');
         cameraFolder.add(this.camera.rotation, 'x', 0, Math.PI).name('X Rotation');
-        cameraFolder.open();
+        cameraFolder.close();
 
         // Fretboard settings
         const fretboardFolder = this.gui.addFolder('Fretboard');
@@ -138,12 +138,11 @@ export default class GameManager {
         fretboardFolder.add(this.fretboard.mesh.material, 'wireframe').name('Wireframe').onChange((value) => {
             this.fretboard.mesh.material.wireframe = value;
         });
-        
-        this.rotateX = 0;
-        fretboardFolder.add(this, 'rotateX', 0, Math.PI).name('X Rotation').onChange((value) => {
+        // this.rotateX = 0;
+        fretboardFolder.add(this.fretboard.mesh.rotation, 'x', 0, Math.PI).name('X Rotation').onChange((value) => {
             this.fretboard.rotate(value);
         });
-        fretboardFolder.open();
+        fretboardFolder.close();
     }
 
     setupHelpers() {
@@ -181,24 +180,6 @@ export default class GameManager {
         this.controls.update();
         this.fretboard.update(); // Update lanes and notes
         this.renderer.render(this.scene, this.camera);
-
-        // Calculate and display the vector values on screen
-        this.camera.getWorldDirection(this.cameraDirection); // this copies the camera's unit vector direction to cameraDirection
-        this.cameraDirection.multiplyScalar(100); // scale the unit vector up to get a more intuitive value
-
-        // update the onscreen spans with the camera's position and lookAt vectors
-        this.camPositionSpan.innerHTML = `
-            Position: (
-                ${this.camera.position.x.toFixed(1)},
-                ${this.camera.position.y.toFixed(1)},
-                ${this.camera.position.z.toFixed(1)}
-            )`
-        this.camLookAtSpan.innerHTML = `
-            LookAt: (
-                ${(this.camera.position.x + this.cameraDirection.x).toFixed(1)},
-                ${(this.camera.position.y + this.cameraDirection.y).toFixed(1)},
-                ${(this.camera.position.z + this.cameraDirection.z).toFixed(1)}
-            )`
 
         this.stats.end(); // End measuring FPS
 

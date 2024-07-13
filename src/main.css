@@ -10,12 +10,3 @@ body {
 	height: 100%;
 	display: block;
 }
-
-#camera-vectors {
-	position: absolute;
-	top: 0;
-	right: 0;
-	background: black;
-	padding: 10px;
-	color: white;
-  }

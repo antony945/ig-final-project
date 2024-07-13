@@ -3,8 +3,8 @@ import Lane from './Lane.js';
 import { removeObject3D } from './utils.js'; // Adjust the path as necessary
 
 export default class Fretboard {
-    constructor(numLanes, asLines=true) {        
-        this.geometry = new THREE.PlaneGeometry(5, 15);
+    constructor(width, height, numLanes, asLines=true) {  
+        this.geometry = new THREE.PlaneGeometry(width, height);
         this.material = new THREE.MeshPhongMaterial(
             {
                 color: 0xffffff,
@@ -15,8 +15,7 @@ export default class Fretboard {
         );
 
         this.mesh = new THREE.Mesh(this.geometry, this.material);
-        // this.mesh.rotateX(-10);
-        this.mesh.position.y = 0; // Move the fretboard back so the notes can be in front of it
+        this.mesh.position.y = 0;
         this.mesh.position.z = -0.01; // Move the fretboard back so the notes can be in front of it
         
         // Create lanes
