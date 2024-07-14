@@ -9,6 +9,8 @@ export default class Lane {
         this.laneHeight = laneHeight;
         this.colors = colors;
 
+        this.collidingNote = null;
+
         // Starting offset of lane
         this.lane_x = -(fretGeometry.parameters.width/2) + (this.laneWidth / 2) + this.index * this.laneWidth
 
@@ -68,7 +70,19 @@ export default class Lane {
         return note;
     }
 
-    update() {
-        this.notes.forEach(note => note.update());
+    update(holeMesh) {
+        this.notes.forEach(note => {
+            note.update();
+            note.checkCollision(holeMesh);
+            
+            if (note.collided) {
+                this.collidingNote = note;
+                // console.log(`Lane ${this.index}: Note collision with accuracy ${this.collidingNote.accuracy}`);
+                // TODO: Clean code
+                // Handle note collision here (e.g., update score)
+            } else {
+                this.collidingNote = null;
+            }
+        });
     }
 }

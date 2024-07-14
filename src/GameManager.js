@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls';
 import Stats from 'stats.js';
 import { GUI } from 'dat.gui';
+import * as Utils from './utils.js';
 
 export default class GameManager {
     constructor() {
@@ -14,7 +15,6 @@ export default class GameManager {
 
         // this.audioManager = new AudioManager();
         // this.noteManager = new NoteManager();
-        // this.inputManager = new InputManager();
 
         // Create fretboard
         this.fretboard = new Fretboard(5, 15, 5, true);
@@ -39,6 +39,15 @@ export default class GameManager {
 
         // Helpers
         // this.setupHelpers();
+
+        // Score
+        this.setupScore();
+
+        // ScreenShake
+        this.screenShake = Utils.ScreenShake();
+
+        // Input manager
+        this.inputManager = new InputManager();
     }
 
     init() {
@@ -71,16 +80,33 @@ export default class GameManager {
             -10,
             5
         );
+        this.scene.add(this.camera);
 
         // Initialize OrbitControls
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-    
+        this.controls.enableDamping = true;
+
         // Handle window resize
         window.addEventListener('resize', () => {
             this.camera.aspect = window.innerWidth / window.innerHeight;
             this.camera.updateProjectionMatrix();
             this.renderer.setSize(window.innerWidth, window.innerHeight);
         });
+    }
+
+    setupScore() {
+        this.score = 0;
+        this.updateScoreDisplay();
+    }
+
+    updateScoreDisplay() {
+        const scoreContainer = document.getElementById('score-container');
+        scoreContainer.innerText = `Score: ${this.score}`;
+    }
+
+    updateScore(points) {
+        this.score += points;
+        this.updateScoreDisplay();
     }
 
     setupStats() {
@@ -170,19 +196,102 @@ export default class GameManager {
         this.scene.add(this.pointLight);
     }
 
+    checkInput() {
+        const strumPressed = this.inputManager.isStrumPressed();
+        const pressedLanes = this.inputManager.getPressedLanes();
+        this.updateLaneAnimations();
+
+        // For each one of the pressed lanes check if
+        var returned = false; 
+
+        pressedLanes.forEach(laneIndex => {
+            if (this.handleLanePress(strumPressed, laneIndex)) {
+                returned = true;
+            }
+        });
+
+        // Strum pressed but no lane pressed 
+        if (!returned && strumPressed && !this.inputManager.isLaneKeyPressed()) {
+            this.shakeCamera();
+        }
+    }
+
+    handleLanePress(strumPressed, laneIndex) {
+        const lane = this.fretboard.lanes[laneIndex];
+        const holeMesh = this.fretboard.holeMeshes[laneIndex];
+
+        if (strumPressed) {
+            if (lane.collidingNote) {   // Lane and strum pressed, colliding note, HIT
+                const note = lane.collidingNote;
+
+                if (note.hit) {
+                }
+
+                // TODO: Maybe not need to check again the collision if we're sure that the note is already colliding
+                note.checkCollision(holeMesh);
+                if (!note.collided) {
+                }
+                
+                // TODO: Store sequence of hitted notes
+                const points = Math.round(note.accuracy * 400); // Calculate points based on accuracy
+                this.updateScore(points); // Update score
+            
+                // TODO: Use another animation with flames
+                this.fretboard.enableNoteHitEffect(laneIndex, note);
+
+                // Optionally, remove the note or mark it as hit
+                // lane.removeNote(note);
+                note.hit = true;
+                note.removeFromScene(this.scene);
+            } else {   // Lane and strum pressed, not colliding note, SHAKE ANIMATION
+                this.shakeCamera();
+            }
+        } else {    // Lane pressed, but Strum not pressed, DROP AUDIO OF NOTE
+            if (lane.collidingNote) {
+                // TODO: Implement dropping audio volume
+                console.log("NOTE MISS AS YOU NEED TO PRESS ALSO 'strum' KEY (j)")
+            }
+        }
+
+        return true;
+    }
+
+    shakeCamera() {
+        this.screenShake.shake(this.camera, new THREE.Vector3(0.1, 0, 0.1), 200);
+    }
+
+    updateLaneAnimations() {
+        // console.log(this.fretboard.isLanePressed);
+        const pressedLanesIndices = this.inputManager.getPressedLanes();
+
+        this.fretboard.isLanePressed.forEach((wasPressed, laneIndex) => {
+            const isPressed = pressedLanesIndices.includes(laneIndex);
+
+            if (isPressed && !wasPressed) {
+                this.fretboard.enableLanePressEffect(laneIndex);
+            } else if (!isPressed && wasPressed) {
+                this.fretboard.disableLanePressEffect(laneIndex);
+            }
+
+            this.fretboard.isLanePressed[laneIndex] = isPressed;
+        });
+    }
+
+
     // Animation function
     gameLoop() {
         this.stats.begin(); // Begin measuring FPS
         
         // this.noteManager.update();
         // this.inputManager.checkInput();
+        this.checkInput();
         
+        this.screenShake.update(this.camera);
         this.controls.update();
         this.fretboard.update(); // Update lanes and notes
+
         this.renderer.render(this.scene, this.camera);
-
         this.stats.end(); // End measuring FPS
-
         requestAnimationFrame(this.gameLoop.bind(this));
     }
 
