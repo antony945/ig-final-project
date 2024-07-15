@@ -14,7 +14,6 @@ export default class GameManager {
         
         // this.addFog();
 
-        // this.audioManager = new AudioManager();
         // this.noteManager = new NoteManager();
 
         // Create fretboard
@@ -51,6 +50,24 @@ export default class GameManager {
 
         // Initialize input
         this.setupInput();
+
+        // Initialize audio
+        this.setupAudioManager();
+    }
+
+    setupAudioManager() {
+        const soundEffects = {
+            // noteHit: 'path/to/noteHit.mp3',
+            // strumMiss: 'path/to/strumMiss.mp3'
+            // Add other sound effects as needed
+        };
+
+        this.audioManager = new AudioManager(
+            'songs/s0/guitar.opus',
+            soundEffects,
+            'songs/s0/song.ini',
+            this.listener
+        );
     }
 
     init() {
@@ -83,6 +100,10 @@ export default class GameManager {
 
         this.camera.position.copy(this.defaultCameraPosition);
         this.scene.add(this.camera);
+
+        // Setup listener
+        this.listener = new THREE.AudioListener();
+        this.camera.add(this.listener);
 
         // Initialize OrbitControls
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -369,7 +390,7 @@ export default class GameManager {
 
     // Starts the game and runs gameLoop
     startGame() {
-        // this.audioManager.play();
+        this.audioManager.playMainSong();
         this.gameLoop();
     }
 }
