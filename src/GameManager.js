@@ -4,7 +4,7 @@ import NoteManager from './NoteManager.js';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls';
 import Stats from 'stats.js';
-import { GUI } from 'dat.gui';
+import { GUI } from 'lil-gui';
 import * as Utils from './utils.js';
 
 export default class GameManager {
