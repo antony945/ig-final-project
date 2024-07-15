@@ -71,9 +71,6 @@ export default class Fretboard {
         this.pickupWidth = numLanes * laneWidth; // Width of pickup area
         this.pickupHeight = 0.8; // Height of pickup area
     
-        this.holeRadius = laneWidth / 4; // Radius of holes for notes
-        this.holeDistance = laneWidth; // Distance between holes (aligned with lanes)
-    
         // Create a plane geometry for the pickup area
         const geometry = new THREE.PlaneGeometry(this.pickupWidth, this.pickupHeight);
     
@@ -89,9 +86,18 @@ export default class Fretboard {
         ); // Adjust position at the bottom of the fretboard
     
         // Create spherical holes (representing notes)
+        this.holeRadius = laneWidth / 4; // Radius of holes for notes
+        this.holeDistance = laneWidth; // Distance between holes (aligned with lanes)
+        this.createPickupHoles(numLanes, this.holeRadius);
+    
+        // Add the pickup area to the fretboard mesh
+        this.mesh.add(this.pickupMesh);
+    }
+
+    createPickupHoles(numLanes, holeRadius) {
         // const holeGeometry = new THREE.SphereGeometry(this.holeRadius, 16, 16, -Math.PI, Math.PI);
         // const holeGeometry = new THREE.RingGeometry(0.1, this.holeRadius, 8);
-        const holeGeometry = new THREE.TorusGeometry(this.holeRadius, 0.05, 8, 8 );
+        const holeGeometry = new THREE.TorusGeometry(holeRadius, 0.05, 8, 8 );
 
         this.holeMeshes = [];
         for (let i = 0; i < numLanes; i++) {
@@ -116,9 +122,6 @@ export default class Fretboard {
             // Store hole meshes
             this.holeMeshes.push(holeMesh);
         }
-    
-        // Add the pickup area to the fretboard mesh
-        this.mesh.add(this.pickupMesh);
     }
 
     createLanePressEffects() {
@@ -130,7 +133,7 @@ export default class Fretboard {
             
             const material = new THREE.MeshBasicMaterial({ color: this.colors[i], transparent: true, opacity: 0.3 });
             const cylinderMesh = new THREE.Mesh(geometry, material);
-            cylinderMesh.rotation.x = -Math.PI / 2;
+            cylinderMesh.rotation.x = Math.PI / 2;
             cylinderMesh.position.copy(this.holeMeshes[i].position);
 
             cylinderMesh.position.z += this.pressEffectsHeight/2;
