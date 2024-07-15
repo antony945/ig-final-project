@@ -130,8 +130,9 @@ export default class Fretboard {
             
             const material = new THREE.MeshBasicMaterial({ color: this.colors[i], transparent: true, opacity: 0.3 });
             const cylinderMesh = new THREE.Mesh(geometry, material);
-            cylinderMesh.rotation.x = -Math.PI / 2;            
+            cylinderMesh.rotation.x = -Math.PI / 2;
             cylinderMesh.position.copy(this.holeMeshes[i].position);
+
             cylinderMesh.position.z += this.pressEffectsHeight/2;
             this.pressEffects.push(cylinderMesh);
 
@@ -182,7 +183,26 @@ export default class Fretboard {
 
     enableLanePressEffect(laneIndex) {
         // Right now just put visibility to true
-        this.pressEffects[laneIndex].visible = true;
+        const pressEffect = this.pressEffects[laneIndex];
+        pressEffect.visible = true;
+        return
+        // this.pressEffectsHeight =
+
+
+        
+        
+        // let progress = 0;
+        // const duration = 
+        
+        // if (effect.progress < duration) {
+        //     effect.progress += 0.01;
+            
+        //     const height = THREE.MathUtils.lerp(0, maxHeight, effect.progress / duration);
+        //     // pressEffect.position.z += height/2;
+        //     effect.mesh.scale.set(1, height, 1);
+        // }
+
+
         return
 
         holeMesh = this.holeMeshes
