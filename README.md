@@ -16,3 +16,5 @@ Repository for final project of Interactive Graphics course.
 - https://www.reddit.com/r/gamedev/comments/4ayt6w/best_way_of_coding_the_movement_of_notes_in_a/
 - https://www.reddit.com/r/gamedev/comments/2fxvk4/heres_a_quick_and_dirty_guide_i_just_wrote_how_to/
 - https://sbcode.net/threejs/github-pages/
+- https://fizzd.notion.site/How-To-Make-A-Rhythm-Game-43d88e177da746e683afee494fdca3dc
+- https://web.archive.org/web/20210225110635/http://ludumdare.com/compo/2014/09/09/an-ld48-rhythm-game-part-2/

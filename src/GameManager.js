@@ -11,6 +11,8 @@ export default class GameManager {
     constructor() {
         // Create scene, camera, renderer, controls, lights
         this.init();
+        
+        // this.addFog();
 
         // this.audioManager = new AudioManager();
         // this.noteManager = new NoteManager();
@@ -262,6 +264,10 @@ export default class GameManager {
         this.spotLightTarget.position.set(0, 0, 0);
         this.scene.add(this.spotLightTarget);
         this.spotLight.target = this.spotLightTarget;
+    }
+
+    addFog() {
+        this.scene.fog = new THREE.FogExp2(0x01131e, 0.025);
     }
 
     updateLights() {
