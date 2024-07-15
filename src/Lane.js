@@ -4,7 +4,7 @@ import Note from './Note.js';
 export default class Lane {
     constructor(index, laneWidth, laneHeight, fretGeometry, colors, asLines=true) {
         this.index = index;
-        this.notes = [];
+        this.notes = {};
         this.laneWidth = laneWidth;
         this.laneHeight = laneHeight;
         this.colors = colors;
@@ -60,29 +60,39 @@ export default class Lane {
 
     addToScene(scene) {
         scene.add(this.mesh);
-        this.notes.forEach(note => note.addToScene(scene));
+        Object.keys(this.notes).forEach(measure => this.notes[measure].addToScene(scene));
     }
 
-    addNote() {
-        // Add a note to this lane
-        const note = new Note(this.lane_x, this.laneWidth/4, this.laneWidth, this.laneHeight, this.colors[this.index]);
-        this.notes.push(note);
-        return note;
+    addNote(measure) {
+        // Only one note for measure at time
+        if (!this.notes[measure]) {
+            const note = new Note(this.index, this.lane_x, this.laneWidth/4, this.laneWidth, this.laneHeight, this.colors[this.index]);
+            this.notes[measure] = note;
+            return note
+        }
+
+        return null;
     }
 
-    update(holeMesh) {
-        this.notes.forEach(note => {
+    getNote(measure) {
+        return this.notes[measure];
+    }
+
+    update(holeMesh) {  
+        Object.keys(this.notes).forEach( measure => {
+            const note = this.notes[measure]; 
             note.update();
             note.checkCollision(holeMesh);
-            
+
             if (note.collided) {
                 this.collidingNote = note;
                 // console.log(`Lane ${this.index}: Note collision with accuracy ${this.collidingNote.accuracy}`);
-                // TODO: Clean code
-                // Handle note collision here (e.g., update score)
+                // TODO: Clean code later
             } else {
                 this.collidingNote = null;
             }
         });
+
+        return this.collidingNote;
     }
 }

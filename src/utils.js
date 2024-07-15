@@ -198,3 +198,11 @@ export function ScreenShake() {
 	};
 
 };
+
+export function EqualsLists(a, b) {
+    return a.length === b.length && a.every((v, i) => v === b[i]);
+}
+
+export function EqualsSets(a, b) {
+    return a.size === b.size && [...a].every((value) => b.has(value));
+}

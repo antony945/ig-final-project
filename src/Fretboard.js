@@ -36,6 +36,11 @@ export default class Fretboard {
 
         // TODO: Change name, or move to Lane
         this.isLanePressed = Array(5).fill(false);
+        this.notesLaneIndexes = {};
+        // TODO: Will store the most recent measure by identifying when the measure line collide with the pickup area
+        // For now set to -1
+        this.currentMeasure = -1;
+        this.currentNotes = []; // updated in the update method while checking for note collision in lane
     }
 
     rotate(x_angle) {
@@ -138,9 +143,35 @@ export default class Fretboard {
 
     }
 
-    addNoteToLane(laneIndex) {
-        const note = this.lanes[laneIndex].addNote();
-        return note.mesh;
+    addNoteToLane(measure, ...laneIndexes) {
+        const addedNotes = [];
+
+        if (!this.notesLaneIndexes[measure]) {
+            this.notesLaneIndexes[measure] = [];
+        }
+
+        
+        laneIndexes.forEach(laneIndex => {
+            const note = this.lanes[laneIndex].addNote(measure);
+
+            if (note) {
+                this.notesLaneIndexes[measure].push(laneIndex);
+                addedNotes.push(note);
+            }
+        });
+
+        return addedNotes;
+    }
+
+    getNotes(measure) {
+        return this.notesLaneIndexes[measure].map(laneIndex => this.lanes[laneIndex].getNote(measure));
+    }
+
+    getCurrentNotes() {
+        return this.currentNotes;
+        
+        // or
+        return this.getNotes(this.currentMeasure);
     }
 
     addToScene(scene) {
@@ -192,6 +223,14 @@ export default class Fretboard {
     }
 
     update() {
-        this.lanes.forEach((lane, index) => lane.update(this.holeMeshes[index]));
+        // Reset currentNotes
+        this.currentNotes = [];
+        this.lanes.forEach((lane, index) => {
+
+            const collidingNote = lane.update(this.holeMeshes[index]);
+            if (collidingNote) {
+                this.currentNotes.push(collidingNote);
+            }
+        });
     }
 }

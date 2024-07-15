@@ -1,7 +1,6 @@
 import Fretboard from './Fretboard.js';
 import AudioManager from './AudioManager.js';
 import NoteManager from './NoteManager.js';
-import InputManager from './InputManager.js';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls';
 import Stats from 'stats.js';
@@ -21,8 +20,10 @@ export default class GameManager {
         this.fretboard.addToScene(this.scene);
 
         // Load note
-        const n = this.fretboard.addNoteToLane(0);
-        this.scene.add(n);
+        // TODO: For now set all measures to -1
+        const measure = -1;
+        const notes = this.fretboard.addNoteToLane(measure, 0, 1, 2);
+        notes.forEach(n => this.scene.add(n.mesh));
         // this.fretboard.addNoteToLane(1);
         // this.fretboard.addNoteToLane(2);
         // this.fretboard.addNoteToLane(3);
@@ -37,17 +38,17 @@ export default class GameManager {
         // Initialize GUI
         this.setupGUI();
 
-        // Helpers
+        // Initialize helpers
         // this.setupHelpers();
 
-        // Score
+        // Initialize score
         this.setupScore();
 
         // ScreenShake
         this.screenShake = Utils.ScreenShake();
 
-        // Input manager
-        this.inputManager = new InputManager();
+        // Initialize input
+        this.setupInput();
     }
 
     init() {
@@ -75,11 +76,9 @@ export default class GameManager {
             0.1, // near
             100 // far
         );
-        this.camera.position.set(
-            0,
-            -10,
-            5
-        );
+        this.defaultCameraPosition = new THREE.Vector3(0, -10, 5);
+
+        this.camera.position.copy(this.defaultCameraPosition);
         this.scene.add(this.camera);
 
         // Initialize OrbitControls
@@ -92,6 +91,55 @@ export default class GameManager {
             this.camera.updateProjectionMatrix();
             this.renderer.setSize(window.innerWidth, window.innerHeight);
         });
+    }
+
+    // INPUT ---------------------
+    setupInput() {
+        this.keyMap = {
+            'A': 0,
+            'S': 1,
+            'D': 2,
+            'F': 3,
+            'G': 4,
+            'J': 'strum'
+        };
+
+        this.keysPressed = {};
+
+        window.addEventListener('keydown', (e) => this.onKeyDown(e));
+        window.addEventListener('keyup', (e) => this.onKeyUp(e));
+    }
+
+    onKeyDown(e) {
+        if (this.keyMap[e.key.toUpperCase()] !== undefined) {
+            // Check if the pressed key was strum
+            if (this.keyMap[e.key.toUpperCase()] == 'strum') {
+                this.updateStrumAnimation();
+            }
+
+            this.keysPressed[e.key.toUpperCase()] = true;
+        }
+        
+    }
+
+    onKeyUp(e) {
+        if (this.keyMap[e.key.toUpperCase()] !== undefined) {
+            delete this.keysPressed[e.key.toUpperCase()];
+        }
+    }
+
+    isLaneKeyPressed() {
+        return Object.keys(this.keysPressed).some(key => this.keyMap[key] !== 'strum');
+    }
+
+    getPressedLanes() {
+        return Object.keys(this.keysPressed)
+            .filter(key => this.keyMap[key] !== 'strum')
+            .map(key => this.keyMap[key]);
+    }
+
+    isStrumPressed() {
+        return this.keysPressed['J'] === true;
     }
 
     setupScore() {
@@ -196,9 +244,10 @@ export default class GameManager {
         this.scene.add(this.pointLight);
     }
 
+    // TODO: To remove probably
     checkInput() {
-        const strumPressed = this.inputManager.isStrumPressed();
-        const pressedLanes = this.inputManager.getPressedLanes();
+        const strumPressed = this.isStrumPressed();
+        const pressedLanes = this.getPressedLanes();
         this.updateLaneAnimations();
 
         // For each one of the pressed lanes check if
@@ -211,11 +260,12 @@ export default class GameManager {
         });
 
         // Strum pressed but no lane pressed 
-        if (!returned && strumPressed && !this.inputManager.isLaneKeyPressed()) {
+        if (!returned && strumPressed && !this.isLaneKeyPressed()) {
             this.shakeCamera();
         }
     }
 
+    // TODO: To remove probably
     handleLanePress(strumPressed, laneIndex) {
         const lane = this.fretboard.lanes[laneIndex];
         const holeMesh = this.fretboard.holeMeshes[laneIndex];
@@ -258,11 +308,12 @@ export default class GameManager {
 
     shakeCamera() {
         this.screenShake.shake(this.camera, new THREE.Vector3(0.1, 0, 0.1), 200);
+        // this.camera.position.copy(this.defaultCameraPosition);
     }
 
     updateLaneAnimations() {
         // console.log(this.fretboard.isLanePressed);
-        const pressedLanesIndices = this.inputManager.getPressedLanes();
+        const pressedLanesIndices = this.getPressedLanes();
 
         this.fretboard.isLanePressed.forEach((wasPressed, laneIndex) => {
             const isPressed = pressedLanesIndices.includes(laneIndex);
@@ -277,6 +328,51 @@ export default class GameManager {
         });
     }
 
+    updateStrumAnimation() {
+        // Called on strum keyDown
+        // for sure strum is pressed here
+        // Check if there are colliding notes
+        // Make sense to store notes with time index
+        // t0 -> note on red and yellow (1,2)
+        // t1 -> note on red
+
+        // currentNotes will vary from 0 to 4
+        const currentNotes = this.fretboard.getCurrentNotes();
+        // const currentNotes = [];
+        console.log(currentNotes);
+
+        // I want currentNotesLaneIndexes to store for every element n in currentNotes, the element n.laneIndex       
+        // Compare them using a set
+        const currentNotesLaneIndexes = new Set(currentNotes.map(note => note.laneIndex));
+        const pressedLanesIndexes = new Set(this.getPressedLanes());
+
+        // Check if we are pressing ALL AND ONLY the lanes of the currentNotes        
+        const correctPress = Utils.EqualsSets(currentNotesLaneIndexes, pressedLanesIndexes);
+        console.log(currentNotesLaneIndexes);
+        console.log(pressedLanesIndexes);
+        console.log(correctPress)
+
+        // Strummed with no loaded notes -> SHAKE
+        if (currentNotes.length == 0 || ! correctPress) {
+            this.shakeCamera();
+        } else {
+            // Here there are notes and user is correctly pressing all of them
+            // Hit them all
+            currentNotes.forEach(note => {
+                // TODO: Store sequence of hitted notes
+                const points = Math.round(note.accuracy * 400); // Calculate points based on accuracy
+                this.updateScore(points); // Update score
+            
+                // TODO: Use another animation with flames
+                this.fretboard.enableNoteHitEffect(note.laneIndex, note);
+
+                // Optionally, remove the note or mark it as hit
+                // lane.removeNote(note);
+                note.hit = true;
+                note.removeFromScene(this.scene);
+            });
+        }
+    }
 
     // Animation function
     gameLoop() {
@@ -284,8 +380,8 @@ export default class GameManager {
         
         // this.noteManager.update();
         // this.inputManager.checkInput();
-        this.checkInput();
-        
+
+        this.updateLaneAnimations();
         this.screenShake.update(this.camera);
         this.controls.update();
         this.fretboard.update(); // Update lanes and notes

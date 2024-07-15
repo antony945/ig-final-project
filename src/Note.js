@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 
 export default class Note {
-    constructor(lane_x, noteRadius, laneWidth, laneHeight, color) {
+    constructor(laneIndex, lane_x, noteRadius, laneWidth, laneHeight, color) {
+        this.laneIndex = laneIndex;
         this.noteRadius = noteRadius;
         this.laneWidth = laneWidth;
         this.laneHeight = laneHeight;
