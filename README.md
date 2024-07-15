@@ -12,3 +12,7 @@ Repository for final project of Interactive Graphics course.
 - https://sketchfab.com/3d-models/fretboard-1-b0b028c770334e429b552f253ceba80b#download
 - https://sketchfab.com/3d-models/headless-tenor-ukulele-2-of-3-fretboard-5ee67017a34744d78222ea4578fa530d
 - https://dustinpfister.github.io/2021/05/06/threejs-examples-scene-shake/
+- https://guitarhero.fandom.com/wiki/Note_types#:~:text=In%20rhythm%20video%20games%20including,hit%20zone%20across%20a%20highway.
+- https://www.reddit.com/r/gamedev/comments/4ayt6w/best_way_of_coding_the_movement_of_notes_in_a/
+- https://www.reddit.com/r/gamedev/comments/2fxvk4/heres_a_quick_and_dirty_guide_i_just_wrote_how_to/
+- https://sbcode.net/threejs/github-pages/
