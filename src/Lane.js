@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import Note from './Note.js';
 
 export default class Lane {
-    constructor(index, laneWidth, laneHeight, fretGeometry, colors, asLines=true) {
+    constructor(index, laneWidth, laneHeight, fretboardWidth, pickupHeight, pickupOffset, lane_z, colors, asLines=true) {
         this.index = index;
         this.notes = {};
         this.laneWidth = laneWidth;
@@ -12,12 +12,17 @@ export default class Lane {
         this.collidingNote = null;
 
         // Starting offset of lane
-        this.lane_x = -(fretGeometry.parameters.width/2) + (this.laneWidth / 2) + this.index * this.laneWidth
+        this.x = -(fretboardWidth/2) + (this.laneWidth / 2) + this.index * this.laneWidth
+        this.pickupHeight = pickupHeight;
+        this.pickupOffset = pickupOffset;
+        this.z = lane_z;
 
         if (asLines) {
-            this.createLineLane()
+            const isMetallic = true;
+            // this.createLineLane(isMetallic);
+            this.createCylinderLane(isMetallic)
         } else {
-            this.createPlaneLane()
+            this.createPlaneLane();
         }
     }
 
@@ -26,20 +31,26 @@ export default class Lane {
         this.material = new THREE.MeshBasicMaterial({ color: this.colors[this.index], wireframe: false }); // Adjust color as needed
         this.mesh = new THREE.Mesh(this.geometry, this.material);
         this.mesh.position.set(
-            this.lane_x,
+            this.x,
             0,
             0
         )
     }
 
-    createLineLane() {
-        this.material = new THREE.LineBasicMaterial({ color: this.colors[this.index] });
+    createLineLane(isMetallic) {
+        if (isMetallic) {
+            this.color = 0xaaaaaa;
+        } else {
+            this.color = 0xffffff;
+        }
+
+        this.material = new THREE.LineBasicMaterial({ color: this.color });
         this.points = [];
 
         // Top point
         this.points.push(
             new THREE.Vector3(
-                this.lane_x,
+                this.x,
                 this.laneHeight / 2,
                 0
             )
@@ -48,7 +59,7 @@ export default class Lane {
         // Bottom point
         this.points.push(
             new THREE.Vector3(
-                this.lane_x,
+                this.x,
                 -this.laneHeight / 2,
                 0
             )
@@ -56,6 +67,33 @@ export default class Lane {
 
         this.geometry = new THREE.BufferGeometry().setFromPoints(this.points);
         this.mesh = new THREE.Line(this.geometry, this.material);
+    }
+
+    createCylinderLane(isMetallic) {
+        if (isMetallic) {
+            this.color = 0xaaaaaa;
+            this.metalness = 0.9;
+            this.roughness = 0.3;
+        } else {
+            this.color = 0xeeeeee;
+            this.metalness = 0.0;
+            this.roughness = 0.8;
+        }
+
+        // Create a material for strings
+        this.material = new THREE.MeshStandardMaterial({
+            color: this.color,
+            metalness: this.metalness,
+            roughness: this.roughness
+        });
+
+        // Top point
+        const p1 = new THREE.Vector3(this.x, this.laneHeight / 2, 0)
+        const p2 = new THREE.Vector3(this.x, -this.laneHeight / 2 + (1.5*this.pickupHeight + this.pickupOffset), 0)
+        this.geometry = new THREE.CylinderGeometry(0.015, 0.015, p1.distanceTo(p2), 32);
+        this.mesh = new THREE.Mesh(this.geometry, this.material);
+        this.mesh.position.x = this.x;
+        this.mesh.position.z = this.z;
     }
 
     addToScene(scene) {
@@ -66,7 +104,7 @@ export default class Lane {
     addNote(measure) {
         // Only one note for measure at time
         if (!this.notes[measure]) {
-            const note = new Note(this.index, this.lane_x, this.laneWidth/4, this.laneWidth, this.laneHeight, this.colors[this.index]);
+            const note = new Note(this.index, this.x, this.z, this.laneWidth/4, this.laneWidth, this.laneHeight, this.colors[this.index]);
             this.notes[measure] = note;
             return note
         }

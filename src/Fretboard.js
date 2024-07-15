@@ -3,8 +3,10 @@ import Lane from './Lane.js';
 import * as Utils from './utils.js'; // Adjust the path as necessary
 
 export default class Fretboard {
-    constructor(width, height, numLanes, asLines=true) {  
-        this.geometry = new THREE.PlaneGeometry(width, height);
+    constructor(width, height, numLanes, asLines=true) {
+        this.width = width;
+        this.height = height;
+        this.geometry = new THREE.PlaneGeometry(this.width, this.height);
         this.material = new THREE.MeshPhongMaterial(
             {
                 color: 0xffffff,
@@ -21,15 +23,20 @@ export default class Fretboard {
             4: 0xffa500
         }; // Green, Red, Yellow, Blue, Orange
 
+        this.pickupHeight = 0.8; // Height of pickup area
+        this.pickupOffset = 0.5;
         this.mesh = new THREE.Mesh(this.geometry, this.material);
         this.mesh.position.y = 0;
         this.mesh.position.z = -0.01; // Move the fretboard back so the notes can be in front of it
         
         // Create lanes
-        this.createLanes(numLanes, asLines);
+        this.numLanes = numLanes;
+        this.lane_z = 0.0; // TODO: This breaks collision if 0.01
+        this.asLines = asLines;
+        this.createLanes(this.numLanes, this.lane_z, this.asLines);
 
         // Create pickup area
-        this.createPickupArea(numLanes, this.laneWidth, this.laneHeight);
+        this.createPickupArea(this.numLanes, this.laneWidth, this.laneHeight);
 
         // Create press cylinders
         this.createLanePressEffects();
@@ -50,17 +57,14 @@ export default class Fretboard {
         });
     }
 
-    createLanes(numLanes, asLines) {
-        this.numLanes = numLanes;
-        this.asLines = asLines;
-
-        this.laneWidth = this.geometry.parameters.width / this.numLanes; // Width of each lane
-        this.laneHeight = this.geometry.parameters.height;
+    createLanes(numLanes, lane_z, asLines) {
+        this.laneWidth = this.width / numLanes; // Width of each lane
+        this.laneHeight = this.height;
 
         // Create lanes
         this.lanes = [];
         for (let i = 0; i < numLanes; i++) {
-            const lane = new Lane(i, this.laneWidth, this.laneHeight, this.geometry, this.colors, this.asLines);
+            const lane = new Lane(i, this.laneWidth, this.laneHeight, this.width, this.pickupHeight, this.pickupOffset, lane_z, this.colors, asLines);
             // TODO: Think if it is better to attach Lanes to Fretboard or not
             // this.mesh.add(lane.mesh);
             this.lanes.push(lane);
@@ -69,8 +73,7 @@ export default class Fretboard {
 
     createPickupArea(numLanes, laneWidth, laneHeight) {
         this.pickupWidth = numLanes * laneWidth; // Width of pickup area
-        this.pickupHeight = 0.8; // Height of pickup area
-    
+
         // Create a plane geometry for the pickup area
         const geometry = new THREE.PlaneGeometry(this.pickupWidth, this.pickupHeight);
     
@@ -81,8 +84,8 @@ export default class Fretboard {
         this.pickupMesh = new THREE.Mesh(geometry, material);
         this.pickupMesh.position.set(
             0,
-            -(laneHeight / 2) + 0.5,
-            0.01
+            -(laneHeight / 2) + this.pickupOffset,
+            0.0
         ); // Adjust position at the bottom of the fretboard
     
         // Create spherical holes (representing notes)
@@ -157,7 +160,7 @@ export default class Fretboard {
         
         laneIndexes.forEach(laneIndex => {
             const note = this.lanes[laneIndex].addNote(measure);
-
+            
             if (note) {
                 this.notesLaneIndexes[measure].push(laneIndex);
                 addedNotes.push(note);

@@ -67,6 +67,7 @@ export default class GameManager {
         });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(window.devicePixelRatio > 1 ? 2 : 1);
+        this.renderer.shadowMap.enabled = true; // Enable shadow maps
         document.body.appendChild(this.renderer.domElement);
 
         // Set up camera
@@ -91,6 +92,9 @@ export default class GameManager {
             this.camera.updateProjectionMatrix();
             this.renderer.setSize(window.innerWidth, window.innerHeight);
         });
+
+        // Create a clock
+        this.clock = new THREE.Clock();
     }
 
     // INPUT ---------------------
@@ -197,8 +201,6 @@ export default class GameManager {
 
         // Fretboard settings
         const fretboardFolder = this.gui.addFolder('Fretboard');
-
-        
         fretboardFolder.addColor({ color: `#${this.fretboard.mesh.material.color.getHexString()}` }, 'color').onChange((color) => {
             this.fretboard.mesh.material.color.set(color);
         });
@@ -235,75 +237,42 @@ export default class GameManager {
 
         // Directional light
         this.directionalLight = new THREE.DirectionalLight(0xffffff, 1); // color, intensity
-        this.directionalLight.position.set(5, 10, 7.5);
+        this.directionalLight.position.set(5, 0, 7.5);
+        // this.directionalLight.castShadow = true; // Enable shadows for directional light
         this.scene.add(this.directionalLight);
 
         // Point light
         this.pointLight = new THREE.PointLight(0xffffff, 1, 100); // color, intensity, distance
-        this.pointLight.position.set(0, 10, 10);
+        this.pointLight.position.set(0, 0, 10);
+        // this.pointLight.castShadow = true; // Enable shadows for point light
         this.scene.add(this.pointLight);
+
+        // Add a moving spotlight
+        this.spotLight = new THREE.SpotLight(0xffffff);
+        this.spotLight.position.set(0, 0, 0); // Initial position
+        this.spotLight.angle = Math.PI / 6;
+        this.spotLight.penumbra = 0.1;
+        this.spotLight.decay = 2;
+        this.spotLight.distance = 200;
+        this.spotLight.castShadow = true;
+        this.scene.add(this.spotLight);
+
+        // Add a target object for the spotlight to follow
+        this.spotLightTarget = new THREE.Object3D();
+        this.spotLightTarget.position.set(0, 0, 0);
+        this.scene.add(this.spotLightTarget);
+        this.spotLight.target = this.spotLightTarget;
     }
 
-    // TODO: To remove probably
-    checkInput() {
-        const strumPressed = this.isStrumPressed();
-        const pressedLanes = this.getPressedLanes();
-        this.updateLaneAnimations();
+    updateLights() {
+        // Update spotlight position to simulate movement
+        const time = this.clock.getElapsedTime();
+        this.spotLight.position.x = Math.sin(time) * 10;
+        this.spotLight.position.z = Math.cos(time) * 10;
 
-        // For each one of the pressed lanes check if
-        var returned = false; 
-
-        pressedLanes.forEach(laneIndex => {
-            if (this.handleLanePress(strumPressed, laneIndex)) {
-                returned = true;
-            }
-        });
-
-        // Strum pressed but no lane pressed 
-        if (!returned && strumPressed && !this.isLaneKeyPressed()) {
-            this.shakeCamera();
-        }
-    }
-
-    // TODO: To remove probably
-    handleLanePress(strumPressed, laneIndex) {
-        const lane = this.fretboard.lanes[laneIndex];
-        const holeMesh = this.fretboard.holeMeshes[laneIndex];
-
-        if (strumPressed) {
-            if (lane.collidingNote) {   // Lane and strum pressed, colliding note, HIT
-                const note = lane.collidingNote;
-
-                if (note.hit) {
-                }
-
-                // TODO: Maybe not need to check again the collision if we're sure that the note is already colliding
-                note.checkCollision(holeMesh);
-                if (!note.collided) {
-                }
-                
-                // TODO: Store sequence of hitted notes
-                const points = Math.round(note.accuracy * 400); // Calculate points based on accuracy
-                this.updateScore(points); // Update score
-            
-                // TODO: Use another animation with flames
-                this.fretboard.enableNoteHitEffect(laneIndex, note);
-
-                // Optionally, remove the note or mark it as hit
-                // lane.removeNote(note);
-                note.hit = true;
-                note.removeFromScene(this.scene);
-            } else {   // Lane and strum pressed, not colliding note, SHAKE ANIMATION
-                this.shakeCamera();
-            }
-        } else {    // Lane pressed, but Strum not pressed, DROP AUDIO OF NOTE
-            if (lane.collidingNote) {
-                // TODO: Implement dropping audio volume
-                console.log("NOTE MISS AS YOU NEED TO PRESS ALSO 'strum' KEY (j)")
-            }
-        }
-
-        return true;
+        // Update the spotlight target to follow the note
+        this.spotLightTarget.position.x = Math.sin(time) * 5;
+        this.spotLightTarget.position.z = Math.cos(time) * 5;
     }
 
     shakeCamera() {
@@ -379,13 +348,14 @@ export default class GameManager {
         this.stats.begin(); // Begin measuring FPS
         
         // this.noteManager.update();
-        // this.inputManager.checkInput();
+
+        // this.updateLights();
 
         this.updateLaneAnimations();
         this.screenShake.update(this.camera);
         this.controls.update();
         this.fretboard.update(); // Update lanes and notes
-
+    
         this.renderer.render(this.scene, this.camera);
         this.stats.end(); // End measuring FPS
         requestAnimationFrame(this.gameLoop.bind(this));

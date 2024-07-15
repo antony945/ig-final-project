@@ -1,26 +1,35 @@
 import * as THREE from 'three';
 
 export default class Note {
-    constructor(laneIndex, lane_x, noteRadius, laneWidth, laneHeight, color) {
+    constructor(laneIndex, lane_x, lane_z, noteRadius, laneWidth, laneHeight, color) {
         this.laneIndex = laneIndex;
         this.noteRadius = noteRadius;
         this.laneWidth = laneWidth;
         this.laneHeight = laneHeight;
         this.color = color;
-        this.x = lane_x
+        this.x = lane_x;
+        this.z = lane_z;
         this.max_y = laneHeight / 2;
         this.min_y = -laneHeight / 2;
 
         // Start from the top and ensure it is in front of the fretboard
-        this.starting_position = new THREE.Vector3(this.x, this.max_y, 0.0);
+        this.starting_position = new THREE.Vector3(this.x, this.max_y, this.z);
 
         // Define materials
-        const mainMaterial = new THREE.MeshBasicMaterial({ color: this.color });
-        const sideMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const mainMaterial = new THREE.MeshStandardMaterial({
+            color: this.color, // Base color of the material
+            metalness: 0.4,  // Fully metallic
+            roughness: 0.2   // Slightly smooth for a reflective look
+        });
+        const sideMaterial = new THREE.MeshStandardMaterial({
+            color: 0xffffff
+        });
         const mainMaterialSpecial = new THREE.MeshNormalMaterial();
         
         // Normal circular note
         this.mesh = this.createMesh(32, mainMaterial, sideMaterial);
+        // this.mesh.castShadow = true; // Ensure the note casts shadows
+        // this.mesh.receiveShadow = true; // Ensure the note receives shadows
 
         // Special octagonal note
         // this.mesh = this.createMesh(8, mainMaterialSpecial, sideMaterial);
