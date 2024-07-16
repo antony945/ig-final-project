@@ -87,6 +87,7 @@ export default class Note {
     }
 
     update() {
+        // console.log(this.mesh.position);
         this.mesh.position.y -= this.speed;
         
         if (this.mesh.position.y < this.min_y) {

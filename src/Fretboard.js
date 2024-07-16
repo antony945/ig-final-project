@@ -249,10 +249,11 @@ export default class Fretboard {
     }
 
     update() {
+        // if (isPaused) return;
+
         // Reset currentNotes
         this.currentNotes = [];
         this.lanes.forEach((lane, index) => {
-
             const collidingNote = lane.update(this.holeMeshes[index]);
             if (collidingNote) {
                 this.currentNotes.push(collidingNote);

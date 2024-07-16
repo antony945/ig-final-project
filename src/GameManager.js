@@ -53,21 +53,94 @@ export default class GameManager {
 
         // Initialize audio
         this.setupAudioManager();
+
+        // Initalize pause
+        this.isPaused = false;
+        // Add pause overlay
+        this.createPauseOverlay();
+    }
+
+    togglePause() {
+        this.isPaused = !this.isPaused;
+        if (this.isPaused) {
+            this.pauseGame();
+        } else {
+            this.resumeGame();
+        }
+    }
+
+    pauseGame() {
+        // Freeze animations
+        // Add logic to pause any animation loops
+
+        // Freeze audio
+        this.audioManager.pauseActiveSounds();
+
+        // Show pause overlay
+        this.pauseOverlay.style.display = 'block';
+    }
+
+    resumeGame() {
+        // Resume animations
+        this.gameLoop();
+
+        // Resume audio
+        this.audioManager.resumeActiveSounds();
+
+        // Hide pause overlay
+        this.pauseOverlay.style.display = 'none';
+    }
+
+    createPauseOverlay() {
+        this.pauseOverlay = document.createElement('div');
+        this.pauseOverlay.style.position = 'fixed';
+        this.pauseOverlay.style.top = 0;
+        this.pauseOverlay.style.left = 0;
+        this.pauseOverlay.style.width = '100%';
+        this.pauseOverlay.style.height = '100%';
+        this.pauseOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        this.pauseOverlay.style.color = 'white';
+        this.pauseOverlay.style.display = 'flex';
+        this.pauseOverlay.style.justifyContent = 'center';
+        this.pauseOverlay.style.alignItems = 'center';
+        this.pauseOverlay.style.fontSize = '3em';
+        this.pauseOverlay.style.display = 'none';
+        this.pauseOverlay.innerText = 'Game Paused - Press ESC to Resume';
+        document.body.appendChild(this.pauseOverlay);
     }
 
     setupAudioManager() {
         const soundEffects = {
             // noteHit: 'path/to/noteHit.mp3',
-            // strumMiss: 'path/to/strumMiss.mp3'
+            // strumMiss: 'path/to/strumMiss.mp3',
+            songStart: 'effects/song_start_1.mp3',
+            crowdStart: 'effects/crowd_256.mp3'
             // Add other sound effects as needed
         };
 
         this.audioManager = new AudioManager(
-            'songs/s0/guitar.opus',
+            'songs/s0/take_me_out.mp3',
             soundEffects,
             'songs/s0/song.ini',
             this.listener
         );
+    }
+
+    startAudioSequence() {
+        // this.audioManager.playSoundEffect('songStart');
+        setTimeout(() => {
+            this.audioManager.playSoundEffect('songStart');
+        
+            // Play crowdStart effect 1 second after songStart
+            setTimeout(() => {
+                this.audioManager.playSoundEffect('crowdStart');
+            }, 300);
+
+            // Play the main song 3 seconds after crowdStart (4 seconds after songStart)
+            setTimeout(() => {
+                this.audioManager.playMainSong();
+            }, 5000);
+        }, 500);
     }
 
     init() {
@@ -138,6 +211,10 @@ export default class GameManager {
     }
 
     onKeyDown(e) {
+        if (e.key === 'Escape') {
+            this.togglePause();
+        }
+
         if (this.keyMap[e.key.toUpperCase()] !== undefined) {
             // Check if the pressed key was strum
             if (this.keyMap[e.key.toUpperCase()] == 'strum') {
@@ -372,12 +449,14 @@ export default class GameManager {
 
     // Animation function
     gameLoop() {
+        if (this.isPaused) return; // Skip the animation frame if the game is paused
+        // Will be invoked again from resumeGame() function
+        
         this.stats.begin(); // Begin measuring FPS
         
         // this.noteManager.update();
 
         // this.updateLights();
-
         this.updateLaneAnimations();
         this.screenShake.update(this.camera);
         this.controls.update();
@@ -390,7 +469,7 @@ export default class GameManager {
 
     // Starts the game and runs gameLoop
     startGame() {
-        this.audioManager.playMainSong();
+        this.startAudioSequence();
         this.gameLoop();
     }
 }
