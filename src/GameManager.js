@@ -1,6 +1,7 @@
 import Fretboard from './Fretboard.js';
 import AudioManager from './AudioManager.js';
 import NoteManager from './NoteManager.js';
+import CameraShake from './CameraShake.js';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls';
 import Stats from 'stats.js';
@@ -45,7 +46,8 @@ export default class GameManager {
         // Initialize score
         this.setupScore();
 
-        // ScreenShake
+        // CameraShake
+        this.cameraShake = new CameraShake();
         this.screenShake = Utils.ScreenShake();
 
         // Initialize input
@@ -111,10 +113,10 @@ export default class GameManager {
 
     setupAudioManager() {
         const soundEffects = {
-            // noteHit: 'path/to/noteHit.mp3',
-            // strumMiss: 'path/to/strumMiss.mp3',
-            songStart: 'effects/song_start_1.mp3',
-            crowdStart: 'effects/crowd_256.mp3'
+            // noteHit: ['path/to/noteHit.mp3'],
+            songStart: ['effects/song_start_1.mp3', 'effects/song_start_2.mp3', 'effects/song_start_3.mp3'],
+            crowdStart: ['effects/crowd_256.mp3'],
+            strumMiss: ['effects/note_miss_1.mp3', 'effects/note_miss_2.mp3', 'effects/note_miss_3.mp3', 'effects/note_miss_4.mp3', 'effects/note_miss_5.mp3', 'effects/note_miss_6.mp3']
             // Add other sound effects as needed
         };
 
@@ -124,23 +126,6 @@ export default class GameManager {
             'songs/s0/song.ini',
             this.listener
         );
-    }
-
-    startAudioSequence() {
-        // this.audioManager.playSoundEffect('songStart');
-        setTimeout(() => {
-            this.audioManager.playSoundEffect('songStart');
-        
-            // Play crowdStart effect 1 second after songStart
-            setTimeout(() => {
-                this.audioManager.playSoundEffect('crowdStart');
-            }, 300);
-
-            // Play the main song 3 seconds after crowdStart (4 seconds after songStart)
-            setTimeout(() => {
-                this.audioManager.playMainSong();
-            }, 5000);
-        }, 500);
     }
 
     init() {
@@ -380,8 +365,8 @@ export default class GameManager {
     }
 
     shakeCamera() {
-        this.screenShake.shake(this.camera, new THREE.Vector3(0.1, 0, 0.1), 200);
-        // this.camera.position.copy(this.defaultCameraPosition);
+        this.cameraShake.shake(this.camera, new THREE.Vector3(0.3, 0.1, 0.3), 100);
+        // this.screenShake.shake(this.camera, new THREE.Vector3(1, 0, 0), 150);
     }
 
     updateLaneAnimations() {
@@ -412,7 +397,7 @@ export default class GameManager {
         // currentNotes will vary from 0 to 4
         const currentNotes = this.fretboard.getCurrentNotes();
         // const currentNotes = [];
-        console.log(currentNotes);
+        // console.log(currentNotes);
 
         // I want currentNotesLaneIndexes to store for every element n in currentNotes, the element n.laneIndex       
         // Compare them using a set
@@ -421,13 +406,15 @@ export default class GameManager {
 
         // Check if we are pressing ALL AND ONLY the lanes of the currentNotes        
         const correctPress = Utils.EqualsSets(currentNotesLaneIndexes, pressedLanesIndexes);
-        console.log(currentNotesLaneIndexes);
-        console.log(pressedLanesIndexes);
-        console.log(correctPress)
+        // console.log(currentNotesLaneIndexes);
+        // console.log(pressedLanesIndexes);
+        // console.log(correctPress)
 
-        // Strummed with no loaded notes -> SHAKE
+        // Strummed with no loaded notes -> SHAKE and NOTE MISS
         if (currentNotes.length == 0 || ! correctPress) {
+            // TODO: Currently disable shake camera as it doesn't work yet
             this.shakeCamera();
+            this.audioManager.playRandomSoundEffect('strumMiss');
         } else {
             // Here there are notes and user is correctly pressing all of them
             // Hit them all
@@ -458,7 +445,11 @@ export default class GameManager {
 
         // this.updateLights();
         this.updateLaneAnimations();
-        this.screenShake.update(this.camera);
+        
+
+        this.cameraShake.update(this.camera);
+        // this.screenShake.update(this.camera);
+
         this.controls.update();
         this.fretboard.update(); // Update lanes and notes
     
@@ -469,7 +460,7 @@ export default class GameManager {
 
     // Starts the game and runs gameLoop
     startGame() {
-        this.startAudioSequence();
+        this.audioManager.startAudioSequence();
         this.gameLoop();
     }
 }

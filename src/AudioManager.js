@@ -13,10 +13,34 @@ export default class AudioManager {
         this.mainSong = new THREE.Audio(this.listener);
         this.loadMainSong(mainSongPath);
 
+        this.delayedTasks = [];
         this.activeSounds = [];
 
         // this.delay = 3000; // Delay in milliseconds before the main song starts
         // this.skipTime = 3; // Time in seconds to skip at the start of the song
+    }
+
+    startAudioSequence() {
+        const index = 2;
+        this.scheduleTask(() => this.playSoundEffect('songStart', index), 500);
+        this.scheduleTask(() => this.playDefaultSoundEffect('crowdStart'), 1000);
+        this.scheduleTask(() => this.playMainSong(), 4000);
+    }
+
+    scheduleTask(callback, delay) {
+        const task = {
+            callback,
+            remaining: delay,
+            start: Date.now(),
+        };
+
+        this.delayedTasks.push(task);
+
+        task.id = setTimeout(() => {
+            callback();
+            this.delayedTasks = this.delayedTasks.filter(t => t.id !== task.id);
+        }, delay);
+        
     }
 
     async loadSongProperties(path) {
@@ -26,12 +50,15 @@ export default class AudioManager {
     }
 
     loadSoundEffects(soundEffects) {
-        for (const [name, path] of Object.entries(soundEffects)) {
-            const sound = new THREE.Audio(this.listener);
-            this.audioLoader.load(path, (buffer) => {
-                sound.setBuffer(buffer);
+        for (const [name, paths] of Object.entries(soundEffects)) {
+            this.soundEffects[name] = []
+            paths.forEach(path => {
+                const sound = new THREE.Audio(this.listener);
+                this.audioLoader.load(path, (buffer) => {
+                    sound.setBuffer(buffer);
+                });
+                this.soundEffects[name].push(sound);
             });
-            this.soundEffects[name] = sound;
         }
     }
 
@@ -43,77 +70,106 @@ export default class AudioManager {
     }
 
     playMainSong() {
-        if (!this.mainSong.isPlaying) {
-            this.mainSong.play();
-        }
+        if (this.mainSong.isPlaying) return;
+        this.mainSong.play();
+        return this.mainSong.duration;
     }
 
     pauseMainSong() {
-        if (this.mainSong.isPlaying) {
-            this.mainSong.pause();
-        }
+        if (! this.mainSong.isPlaying) return;
+        this.mainSong.pause();
     }
 
-    playSoundEffect(name) {
-        const effect = this.soundEffects[name];
-        if (effect && effect.isPlaying) {
-            effect.stop();
+    playSoundEffect(name, index) {
+        const effects = this.soundEffects[name];
+        if (! effects) return;
+
+        const e = effects[index];
+        if (e.isPlaying) {
+            e.stop();
         }
-        if (effect) {
-            effect.play();
-        }
+        e.play();
     }
+
+    playDefaultSoundEffect(name) {
+        return this.playSoundEffect(name, 0);
+    }
+
+    playRandomSoundEffect(name) {
+        const effects = this.soundEffects[name];
+        if (! effects) return;
+        const randomIndex = Math.floor(Math.random() * effects.length);
+        return this.playSoundEffect(name, randomIndex);
+        // const e = effects[randomIndex];
+        // if (! e.isPlaying) {
+        //     e.stop();
+        // }
+        // e.play();
+    }
+
+    // getDurationSoundEffect(name, index) {
+    //     const e = this.soundEffects[name][index];
+    //     if (! e) return 0;
+    //     console.log(e);
+        
+    //     return e.duration * 1000; // Convert to milliseconds
+    // }
 
     pauseSoundEffect(name) {
-        const effect = this.soundEffects[name];
-        if (effect && effect.isPlaying) {
-            effect.pause();
+        const effects = this.soundEffects[name];
+        if (! effects) return;
+
+        const e = effects[0];
+        if (e.isPlaying) {
+            e.pause();
         }
     }
 
-    // TODO: TO implement
+    getActiveSounds() {
+        const activeSounds = [];
+        
+        if (this.mainSong.isPlaying) {
+            activeSounds.push(this.mainSong);
+        }
+
+        for (const sound of Object.values(this.soundEffects)) {
+            for (const s of sound) {
+                if (s.isPlaying) {
+                    activeSounds.push(s);
+                }
+            }
+        }
+
+        return activeSounds;
+    }
+
     pauseActiveSounds() {
-        this.pauseMainSong();
+        this.activeSounds = this.getActiveSounds();
+
+        this.activeSounds.forEach(sound => {
+            sound.pause();
+        });
+
+        // Clear all pending tasks and track remaining time
+        for (const task of this.delayedTasks) {
+            clearTimeout(task.id);
+            task.remaining -= Date.now() - task.start;
+        }
     }
 
-    // TODO: TO implement
     resumeActiveSounds() {
-        this.playMainSong();
+        // No need to re-fetch active sounds, as resume is always after a pause
+        this.activeSounds.forEach(sound => {
+            sound.play();
+        }); 
+
+        // Reschedule all tasks with remaining time
+        for (const task of this.delayedTasks) {
+            task.start = Date.now();
+            task.id = setTimeout(() => {
+                task.callback();
+                this.delayedTasks = this.delayedTasks.filter(t => t.id !== task.id);
+            }, task.remaining);
+        }
     }
-
-    // pauseAllSounds() {
-    //     this.mainSong.pause();
-
-    //     Object.values(this.soundEffects).forEach(effect => {
-    //         console.log("isPlaying? ", effect.isPlaying)
-    //         effect.pause();
-    //     });
-
-
-    //     // // Clear all pending tasks and track remaining time
-    //     // for (const task of this.delayedTasks) {
-    //     //     clearTimeout(task.id);
-    //     //     task.remaining -= Date.now() - task.start;
-    //     // }
-    // }
-
-    // resumeAllSounds() {
-    //     this.mainSong.play();
-
-    //     Object.values(this.soundEffects).forEach(effect => {
-    //         console.log("isPlaying? ", effect.isPlaying)
-    //         effect.play();
-    //     });
-
-    //     // this.isPaused = false;
-
-    //     // // Reschedule all tasks with remaining time
-    //     // for (const task of this.delayedTasks) {
-    //     //     task.start = Date.now();
-    //     //     task.id = setTimeout(() => {
-    //     //         task.callback();
-    //     //         this.delayedTasks = this.delayedTasks.filter(t => t.id !== task.id);
-    //     //     }, task.remaining);
-    //     // }
-    // }
 }

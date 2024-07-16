@@ -158,6 +158,7 @@ export function ScreenShake() {
 		// This initialize the values of the shaking.
 		// vecToAdd param is the offset of the camera position at the climax of its wave.
 		shake: function shake(camera, vecToAdd, milliseconds) {
+            if (this.enabled) return;
 			this.enabled = true ;
 			this._timestampStart = Date.now();
 			this._timestampEnd = this._timestampStart + milliseconds;
