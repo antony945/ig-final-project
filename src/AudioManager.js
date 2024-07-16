@@ -2,14 +2,19 @@ import * as THREE from 'three';
 import ini from 'ini';
 
 export default class AudioManager {
-    constructor(mainSongPath, soundEffects, songIniPath, listener) {
+    constructor(mainSongPath, songIniPath, soundEffects, listener) {
         this.listener = listener;
         this.audioLoader = new THREE.AudioLoader();
         
         this.soundEffects = {};
         this.loadSoundEffects(soundEffects);
 
-        this.songProperties = this.loadSongProperties(songIniPath);
+        // this.songProperties = this.loadSongProperties(songIniPath);
+        this.loadSongProperties(songIniPath).then(properties => {
+            this.songProperties = properties;
+            this.updateMusicPlayer();
+        });
+        
         this.mainSong = new THREE.Audio(this.listener);
         this.loadMainSong(mainSongPath);
 
@@ -18,6 +23,59 @@ export default class AudioManager {
 
         // this.delay = 3000; // Delay in milliseconds before the main song starts
         // this.skipTime = 3; // Time in seconds to skip at the start of the song
+
+        this.initMusicPlayer();
+    }
+
+    async loadSongProperties(path) {
+        const response = await fetch(path);
+        const data = await response.text();
+        const s = ini.parse(data).Song;
+        return s;
+    }
+
+    initMusicPlayer() {
+        // Create HTML elements for the music player
+        this.musicPlayer = document.createElement('div');
+        this.musicPlayer.id = 'music-player';
+        this.musicPlayer.style.display = 'none';
+        document.body.appendChild(this.musicPlayer);
+
+        this.songImage = document.createElement('img');
+        this.songImage.id = 'song-image';
+        this.musicPlayer.appendChild(this.songImage);
+
+        this.songName = document.createElement('p');
+        this.songName.id = 'song-name';
+        this.musicPlayer.appendChild(this.songName);
+
+        this.songDuration = document.createElement('p');
+        this.songDuration.id = 'song-duration';
+        this.musicPlayer.appendChild(this.songDuration);
+
+        // this.updateMusicPlayer();
+
+        this.mainSong.onEnded(() => this.updateDuration());
+        this.mainSong.onEnded(() => this.updateDuration());
+    }
+
+    updateMusicPlayer() {
+        if (this.songProperties) {
+            this.songImage.src = this.songProperties.img;
+            this.songName.textContent = `${this.songProperties.name} - ${this.songProperties.artist}`;
+            this.musicPlayer.style.display = 'block';
+        }
+    }
+
+    updateDuration() {
+        const currentTime = this.mainSong.context.currentTime - this.mainSong.startTime;
+        const minutes = Math.floor(currentTime / 60);
+        const seconds = Math.floor(currentTime % 60);
+        this.songDuration.textContent = `${this.pad(minutes)}:${this.pad(seconds)}`;
+    }
+
+    pad(num) {
+        return num < 10 ? '0' + num : num;
     }
 
     startAudioSequence() {
@@ -41,12 +99,6 @@ export default class AudioManager {
             this.delayedTasks = this.delayedTasks.filter(t => t.id !== task.id);
         }, delay);
         
-    }
-
-    async loadSongProperties(path) {
-        const response = await fetch(path);
-        const data = await response.text();
-        return ini.parse(data).Song;
     }
 
     loadSoundEffects(soundEffects) {

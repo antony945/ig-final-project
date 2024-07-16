@@ -2,6 +2,7 @@ import Fretboard from './Fretboard.js';
 import AudioManager from './AudioManager.js';
 import NoteManager from './NoteManager.js';
 import CameraShake from './CameraShake.js';
+import BackgroundManager from './BackgroundManager.js';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls';
 import Stats from 'stats.js';
@@ -12,6 +13,7 @@ export default class GameManager {
     constructor() {
         // Create scene, camera, renderer, controls, lights
         this.init();
+        this.scene.background = new THREE.Color( 0xffffff );
         
         // this.addFog();
 
@@ -60,6 +62,14 @@ export default class GameManager {
         this.isPaused = false;
         // Add pause overlay
         this.createPauseOverlay();
+
+        // Initialize background
+        this.setupBackgroundManager();
+    }
+
+    setupBackgroundManager() {
+        const bgImgPath = 'bg/album.jpg'
+        this.backgroundManager = new BackgroundManager(bgImgPath, this.scene, this.gui);
     }
 
     togglePause() {
@@ -122,8 +132,8 @@ export default class GameManager {
 
         this.audioManager = new AudioManager(
             'songs/s0/take_me_out.mp3',
-            soundEffects,
             'songs/s0/song.ini',
+            soundEffects,
             this.listener
         );
     }
@@ -238,7 +248,7 @@ export default class GameManager {
 
     updateScoreDisplay() {
         const scoreContainer = document.getElementById('score-container');
-        scoreContainer.innerText = `Score: ${this.score}`;
+        scoreContainer.innerText = `${this.score}`;
     }
 
     updateScore(points) {
