@@ -39,6 +39,9 @@ export default class Note {
         this.collided = false;
         this.accuracy = 0;
         this.hit = false;
+
+        // Is true if the note is part of the loading star power phase
+        this.starNote = false;
     }
 
     createMesh(numSides, mainMaterial, sideMaterial) {

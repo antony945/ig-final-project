@@ -2,7 +2,9 @@ import * as THREE from 'three';
 import Note from './Note.js';
 
 export default class Lane {
-    constructor(index, laneWidth, laneHeight, fretboardWidth, pickupHeight, pickupOffset, lane_z, colors, asLines=true) {
+    static lane_z = 0.00; // TODO: This breaks collision if 0.01
+
+    constructor(index, laneWidth, laneHeight, fretboardWidth, pickupHeight, pickupOffset, colors, asLines=true) {
         this.index = index;
         this.notes = {};
         this.laneWidth = laneWidth;
@@ -15,7 +17,7 @@ export default class Lane {
         this.x = -(fretboardWidth/2) + (this.laneWidth / 2) + this.index * this.laneWidth
         this.pickupHeight = pickupHeight;
         this.pickupOffset = pickupOffset;
-        this.z = lane_z;
+        this.z = Lane.lane_z;
 
         if (asLines) {
             const isMetallic = true;

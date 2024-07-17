@@ -3,6 +3,7 @@ import AudioManager from './AudioManager.js';
 import NoteManager from './NoteManager.js';
 import CameraShake from './CameraShake.js';
 import BackgroundManager from './BackgroundManager.js';
+import ScoreManager from './ScoreManager.js';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls';
 import Stats from 'stats.js';
@@ -17,12 +18,23 @@ export default class GameManager {
         
         // this.addFog();
 
-        // this.noteManager = new NoteManager();
-
+        
+        
         // Create fretboard
         this.fretboard = new Fretboard(5, 15, 5, true);
         this.fretboard.addToScene(this.scene);
 
+        // Create noteManager
+        this.noteManager = new NoteManager(
+            this.fretboard,
+            104,
+            4,
+            null,
+            null
+        );
+
+        this.noteManager.addTicksToScene(this.scene);
+        
         // Load note
         // TODO: For now set all measures to -1
         const measure = -1;
@@ -46,7 +58,7 @@ export default class GameManager {
         // this.setupHelpers();
 
         // Initialize score
-        this.setupScore();
+        this.setupScoreManager();
 
         // CameraShake
         this.cameraShake = new CameraShake();
@@ -65,6 +77,10 @@ export default class GameManager {
 
         // Initialize background
         this.setupBackgroundManager();
+    }
+
+    setupScoreManager() {
+        this.scoreManager = new ScoreManager();
     }
 
     setupBackgroundManager() {
@@ -241,21 +257,6 @@ export default class GameManager {
         return this.keysPressed['J'] === true;
     }
 
-    setupScore() {
-        this.score = 0;
-        this.updateScoreDisplay();
-    }
-
-    updateScoreDisplay() {
-        const scoreContainer = document.getElementById('score-container');
-        scoreContainer.innerText = `${this.score}`;
-    }
-
-    updateScore(points) {
-        this.score += points;
-        this.updateScoreDisplay();
-    }
-
     setupStats() {
         this.stats = new Stats();
         this.stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
@@ -264,7 +265,6 @@ export default class GameManager {
 
     setupGUI() {
         this.gui = new GUI();
-
         // Directional light settings
         const lightFolder = this.gui.addFolder('Directional Light');
         lightFolder.add(this.directionalLight.position, 'x', -100, 100).name('X Position');
@@ -314,6 +314,7 @@ export default class GameManager {
             this.fretboard.rotate(value);
         });
         fretboardFolder.close();
+        this.gui.close();
     }
 
     setupHelpers() {
@@ -422,25 +423,30 @@ export default class GameManager {
 
         // Strummed with no loaded notes -> SHAKE and NOTE MISS
         if (currentNotes.length == 0 || ! correctPress) {
-            // TODO: Currently disable shake camera as it doesn't work yet
+            // Handle note miss from here
+            this.scoreManager.handleMiss();
+
             this.shakeCamera();
             this.audioManager.playRandomSoundEffect('strumMiss');
-        } else {
+        } else
+        
+        if (currentNotes.length > 0 && correctPress) {
             // Here there are notes and user is correctly pressing all of them
             // Hit them all
             currentNotes.forEach(note => {
-                // TODO: Store sequence of hitted notes
-                const points = Math.round(note.accuracy * 400); // Calculate points based on accuracy
-                this.updateScore(points); // Update score
-            
                 // TODO: Use another animation with flames
                 this.fretboard.enableNoteHitEffect(note.laneIndex, note);
 
-                // Optionally, remove the note or mark it as hit
+                // TODO: Need better way to handle note hit or miss, maybe in the noteManager
+                // Note hit, handle hit
+                this.scoreManager.handleHit(note.starNote);
+                // Remove the note or mark it as hit
                 // lane.removeNote(note);
                 note.hit = true;
                 note.removeFromScene(this.scene);
             });
+        } else {
+            // Or there are no notes and you strummed or you didn't press
         }
     }
 
