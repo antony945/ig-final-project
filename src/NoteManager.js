@@ -51,6 +51,9 @@ export default class NoteManager {
         this.totalTicks = 0;
         this.tickLines = this.createFretboardTicks(this.fretboard, this.DEFAULT_FPS);
 
+
+        this.speed = 0;
+        this.tickSpeed = 0;
         this.setupSpeed();
 
         // Notes stored in dictionary ordered by their half beat count
@@ -113,7 +116,7 @@ export default class NoteManager {
         // use visibleTickLines only if it's grater than ticksPerMeasure
         this.totalTicks = this.ticksPerMeasure;
         if (this.totalTicks < this.visibleTickLinesCount) {
-            this.totalTicks = this.visibleTickLinesCount; 
+            this.totalTicks = this.visibleTickLinesCount;
         }
 
         const tickLines = []
@@ -127,7 +130,8 @@ export default class NoteManager {
                 fretboard.width,
                 fretboard.height,
                 fretboard.pickupOffset,
-                fretboard.holeRadius
+                fretboard.pickupHeight,
+                // fretboard.holeRadius
             );
             
             tickLines.push(tickLine);
@@ -182,7 +186,7 @@ export default class NoteManager {
         // Create here the note and pass it to the tick
         laneIndexes.forEach(laneIndex => {
             const lane = this.lanes[laneIndex];
-            const note = new Note(currentTick.tickIndex, laneIndex, lane.x, currentTick.mesh.position.y, lane.z, this.fretboard.laneWidth/4, this.fretboard.laneWidth, this.fretboard.laneHeight, this.fretboard.colors[laneIndex]);
+            const note = new Note(currentTick.tickIndex, laneIndex, lane.x, currentTick.mesh.position.y, lane.z, this.fretboard.laneWidth/4, this.fretboard.laneWidth, this.fretboard.laneHeight, Fretboard.colors[laneIndex]);
             const addedNote = currentTick.addNoteToLane(laneIndex, note);
             if (addedNote) {
                 addedNotes.push(addedNote);
@@ -193,11 +197,11 @@ export default class NoteManager {
     }
 
     update(fps) {
-        const speed = this.speed/fps;
+        this.tickSpeed = this.speed/fps;
 
         // Update tick lines
         this.tickLines.forEach(tl => {
-            tl.update(speed);
+            tl.update(this.tickSpeed);
         });
 
         // Check if one of them has collided

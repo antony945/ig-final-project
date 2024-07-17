@@ -17,11 +17,10 @@ export default class GameManager {
         this.scene.background = new THREE.Color( 0xffffff );
         
         // this.addFog();
-
-        
         
         // Create fretboard
-        this.fretboard = new Fretboard(5, 15, 5, true);
+        this.fretboard = new Fretboard(5, 15, 5, 'textures/fretboard.jpg');
+        // this.fretboard = new Fretboard(5, 15, 5, 'textures/GH2_beta-Metal.png');
         this.fretboard.addToScene(this.scene);
 
         // Create noteManager
@@ -32,7 +31,6 @@ export default class GameManager {
             null,
             null
         );
-
         this.noteManager.addTicksToScene(this.scene);
         
         // Load note
@@ -174,9 +172,9 @@ export default class GameManager {
             75, // fov
             window.innerWidth / window.innerHeight, // aspectRatio
             0.1, // near
-            100 // far
+            50 // far
         );
-        this.defaultCameraPosition = new THREE.Vector3(0, -10, 5);
+        this.defaultCameraPosition = new THREE.Vector3(0, -9.9, 5);
 
         this.camera.position.copy(this.defaultCameraPosition);
         this.scene.add(this.camera);
@@ -292,21 +290,21 @@ export default class GameManager {
 
         // Fretboard settings
         const fretboardFolder = this.gui.addFolder('Fretboard');
-        fretboardFolder.addColor({ color: `#${this.fretboard.mesh.material.color.getHexString()}` }, 'color').onChange((color) => {
-            this.fretboard.mesh.material.color.set(color);
+        fretboardFolder.addColor({ color: `#${this.fretboard.fretboardMesh.material.color.getHexString()}` }, 'color').onChange((color) => {
+            this.fretboard.fretboardMesh.material.color.set(color);
         });
-        fretboardFolder.add(this.fretboard.mesh.material, 'opacity', 0, 1).name('Opacity').onChange((value) => {
-            this.fretboard.mesh.material.opacity = value;
-            this.fretboard.mesh.material.transparent = value < 1.0;
+        fretboardFolder.add(this.fretboard.fretboardMesh.material, 'opacity', 0, 1).name('Opacity').onChange((value) => {
+            this.fretboard.fretboardMesh.material.opacity = value;
+            this.fretboard.fretboardMesh.material.transparent = value < 1.0;
         });
-        fretboardFolder.add(this.fretboard.mesh.material, 'transparent').name('Transparent').onChange((value) => {
-            this.fretboard.mesh.material.transparent = value;
+        fretboardFolder.add(this.fretboard.fretboardMesh.material, 'transparent').name('Transparent').onChange((value) => {
+            this.fretboard.fretboardMesh.material.transparent = value;
         });
-        fretboardFolder.add(this.fretboard.mesh.material, 'wireframe').name('Wireframe').onChange((value) => {
-            this.fretboard.mesh.material.wireframe = value;
+        fretboardFolder.add(this.fretboard.fretboardMesh.material, 'wireframe').name('Wireframe').onChange((value) => {
+            this.fretboard.fretboardMesh.material.wireframe = value;
         });
         // this.rotateX = 0;
-        fretboardFolder.add(this.fretboard.mesh.rotation, 'x', 0, Math.PI).name('X Rotation').onChange((value) => {
+        fretboardFolder.add(this.fretboard.fretboardMesh.rotation, 'x', 0, Math.PI).name('X Rotation').onChange((value) => {
             this.fretboard.rotate(value);
         });
         fretboardFolder.close();
@@ -460,6 +458,7 @@ export default class GameManager {
         
         // console.log(this.fps)
         this.noteManager.update(this.fps);
+        this.fretboard.update(this.noteManager.tickSpeed); // Update fretboard texture
 
         // this.updateLights();
         this.updateLaneAnimations();
@@ -468,8 +467,6 @@ export default class GameManager {
         // this.screenShake.update(this.camera);
 
         this.controls.update();
-        // this.fretboard.update(); // Update lanes and notes
-    
         this.renderer.render(this.scene, this.camera);
         this.stats.end(); // End measuring FPS
         this.fps = 1000 / (this.thisLoop - this.lastLoop);

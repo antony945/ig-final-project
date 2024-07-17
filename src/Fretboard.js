@@ -7,37 +7,92 @@ export default class Fretboard {
     static pickupAreaZ = 0.0;
     static pickupHolesZ = 0.0;
     static pressEffectsHeight = 0.25;
+    static colors = {
+        0: 0x00ff00,
+        1: 0xff0000,
+        2: 0xffff00,
+        3: 0x0000ff,
+        4: 0xffa500
+    }; // Green, Red, Yellow, Blue, Orange
 
-    constructor(width, height, numLanes, asLines=true) {
+    constructor(width, height, numLanes, texturePath) {
         this.width = width;
         this.height = height;
+
+        // Apply texture
+        this.textureLoader = new THREE.TextureLoader();
+
+        // // load a resource
+        // this.textureLoader.load(
+        //     // resource URL
+        //     texturePath,
+
+        //     // onLoad callback
+        //     function ( texture ) {
+        //         // in this example we create the material when the texture is loaded
+        //         this.material = new THREE.MeshBasicMaterial( {
+        //             map: texture
+        //         } );
+        //     },
+
+        //     // onProgress callback currently not supported
+        //     undefined,
+
+        //     // onError callback
+        //     function ( err ) {
+        //         console.error( 'An error happened.', err );
+        //     }
+        // );
+        this.texture = this.textureLoader.load(texturePath);
+        this.texture.wrapS = THREE.RepeatWrapping;
+        // this.texture.wrapT = THREE.RepeatWrapping;
+        // this.texture.repeat.set(1, this.height);
+
+
+        // Create mesh
         this.geometry = new THREE.PlaneGeometry(this.width, this.height);
-        this.material = new THREE.MeshPhongMaterial(
+        this.material = new THREE.MeshPhysicalMaterial(
             {
-                color: 0x000000,
-                side: THREE.DoubleSide,
-                transparent: true,
-                opacity: .6
+                map: this.texture,
+                // side: THREE.DoubleSide,
             }
         );
-        this.colors = {
-            0: 0x00ff00,
-            1: 0xff0000,
-            2: 0xffff00,
-            3: 0x0000ff,
-            4: 0xffa500
-        }; // Green, Red, Yellow, Blue, Orange
+        this.fretboardMesh = new THREE.Mesh(this.geometry, this.material);
+        
+        // Create the darkening overlay
+        this.darkOverlayMaterial = new THREE.MeshBasicMaterial({
+            color: 0x000000,
+            transparent: true,
+            // side: THREE.DoubleSide,
+            opacity: 0.4
+        });
+        this.darkOverlayMesh = new THREE.Mesh(this.geometry, this.darkOverlayMaterial);
+        // this.mesh.add(this.darkOverlayMesh); // Add the overlay to the fretboard
 
+        // Create borders
+        this.edges = new THREE.EdgesGeometry(this.geometry);
+        this.borderMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 5 }); // Adjust linewidth for thickness
+        this.borderMesh = new THREE.LineSegments(this.edges, this.borderMaterial);
+
+        // Group
+        this.mesh = new THREE.Object3D()
+        this.mesh.add(this.fretboardMesh)
+        this.mesh.add(this.darkOverlayMesh)
+        this.mesh.add(this.borderMesh)
+
+        // Position the border correctly
+        this.borderMesh.scale.copy(this.fretboardMesh.scale);
+        
+        
         this.pickupHeight = 0.8; // Height of pickup area
         this.pickupOffset = 0.5;
-        this.mesh = new THREE.Mesh(this.geometry, this.material);
         this.mesh.position.y = 0;
         this.mesh.position.z = Fretboard.fretboardZ; // Move the fretboard back so the notes can be in front of it
+        // border.position.copy(fretboardMesh.position);
         
         // Create lanes
         this.numLanes = numLanes;
-        this.asLines = asLines;
-        this.createLanes(this.numLanes, this.asLines);
+        this.createLanes(this.numLanes);
 
         // Create pickup area
         this.createPickup(this.numLanes, this.laneWidth, this.laneHeight);
@@ -47,8 +102,7 @@ export default class Fretboard {
         this.notesLaneIndexes = {};
         // TODO: Will store the most recent measure by identifying when the measure line collide with the pickup area
         // For now set to -1
-        this.currentMeasure = -1;
-        this.currentNotes = []; // updated in the update method while checking for note collision in lane
+        // this.currentNotes = []; // updated in the update method while checking for note collision in lane
     }
 
     rotate(x_angle) {
@@ -58,14 +112,14 @@ export default class Fretboard {
         });
     }
 
-    createLanes(numLanes, asLines) {
+    createLanes(numLanes) {
         this.laneWidth = this.width / numLanes; // Width of each lane
         this.laneHeight = this.height;
 
         // Create lanes
         this.lanes = [];
         for (let i = 0; i < numLanes; i++) {
-            const lane = new Lane(i, this.laneWidth, this.laneHeight, this.width, this.pickupHeight, this.pickupOffset, this.colors, asLines);
+            const lane = new Lane(i, this.laneWidth, this.laneHeight, this.width, this.pickupHeight, this.pickupOffset, Fretboard.colors);
             // TODO: Think if it is better to attach Lanes to Fretboard or not
             // this.mesh.add(lane.mesh);
             this.lanes.push(lane);
@@ -124,7 +178,7 @@ export default class Fretboard {
         const holeMeshes = [];
         for (let i = 0; i < numLanes; i++) {
             const holeMaterial = new THREE.MeshStandardMaterial({
-                color: this.colors[i],
+                color: Fretboard.colors[i],
                 transparent: true,
                 opacity: 0.5,
                 side: THREE.DoubleSide,
@@ -153,7 +207,7 @@ export default class Fretboard {
         for (let i = 0; i < this.numLanes; i++) {
             const geometry = new THREE.CylinderGeometry(this.holeRadius, this.holeRadius, Fretboard.pressEffectsHeight, 8);
             
-            const material = new THREE.MeshBasicMaterial({ color: this.colors[i], transparent: true, opacity: 0.3 });
+            const material = new THREE.MeshBasicMaterial({ color: Fretboard.colors[i], transparent: true, opacity: 0.3 });
             const cylinderMesh = new THREE.Mesh(geometry, material);
             cylinderMesh.rotation.x = Math.PI / 2;
             cylinderMesh.position.copy(this.holeMeshes[i].position);
@@ -179,51 +233,6 @@ export default class Fretboard {
         const pressEffect = this.pressEffects[laneIndex];
         pressEffect.visible = true;
         return
-        // Fretboard.pressEffectsHeight =
-
-
-        
-        
-        // let progress = 0;
-        // const duration = 
-        
-        // if (effect.progress < duration) {
-        //     effect.progress += 0.01;
-            
-        //     const height = THREE.MathUtils.lerp(0, maxHeight, effect.progress / duration);
-        //     // pressEffect.position.z += height/2;
-        //     effect.mesh.scale.set(1, height, 1);
-        // }
-
-
-        return
-
-        holeMesh = this.holeMeshes
-
-
-        if (!this.strumEffects[laneIndex]) {
-            const geometry = new THREE.CylinderGeometry(this.holeRadius, this.holeRadius, 0.01, 8);
-            const material = new THREE.MeshBasicMaterial({ color: this.colors[laneIndex], transparent: true, opacity: 0.6 });
-            const cylinder = new THREE.Mesh(geometry, material);
-            cylinder.position.copy(holeMesh.position);
-            this.scene.add(cylinder);
-
-            this.strumEffects[laneIndex] = { mesh: cylinder, progress: 0 };
-        }
-
-        const effect = this.strumEffects[laneIndex];
-        const duration = this.strumAnimationDuration;
-        const maxHeight = 1;
-
-        if (effect.progress < duration) {
-            effect.progress += 0.01;
-
-            const height = THREE.MathUtils.lerp(0, maxHeight, effect.progress / duration);
-            effect.mesh.scale.set(1, height, 1);
-        } else {
-            this.scene.remove(effect.mesh);
-            delete this.strumEffects[laneIndex];
-        }
     }
 
     disableLanePressEffect(laneIndex) {
@@ -233,6 +242,11 @@ export default class Fretboard {
 
     enableNoteHitEffect(laneIndex, hittedLine) {
         console.log("NOTE IN " + laneIndex + " WAS HIT WITH ACCURACY OF "+parseFloat(hittedLine.accuracy).toFixed(2)+"%")
+    }
+
+    update(speed) {
+        // Update the texture offset
+        this.texture.offset.y += (speed);
     }
 
     // update() {

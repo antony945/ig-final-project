@@ -19,7 +19,7 @@ export default class Tick {
     //     'measure': 0x0000FF
     // }
     
-    constructor(tickIndex, ticksPerMeasure, tickSpace, fretboardWidth, fretboardHeight, pickupOffset, noteRadius) {
+    constructor(tickIndex, ticksPerMeasure, tickSpace, fretboardWidth, fretboardHeight, pickupOffset, pickupHeight) {
         this.tickIndex = tickIndex;
         this.ticksPerMeasure = ticksPerMeasure;
         this.tickType = this.getTickType(this.tickIndex);
@@ -32,8 +32,8 @@ export default class Tick {
         this.x_max = +fretboardWidth / 2;
 
         this.y_perfect_hit = -(fretboardHeight / 2) + pickupOffset;
-        this.y_start_hit = this.y_perfect_hit + noteRadius / 2;
-        this.y_end_hit = this.y_perfect_hit - noteRadius / 2
+        this.y_start_hit = this.y_perfect_hit + pickupHeight / 2;
+        this.y_end_hit = this.y_perfect_hit - pickupHeight / 2
         
         this.y_start = this.y_perfect_hit + tickIndex * tickSpace;
         this.z = Tick.tickZ;

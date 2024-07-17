@@ -3,13 +3,19 @@ import Note from './Note.js';
 
 export default class Lane {
     static lane_z = 0.00; // TODO: This breaks collision if 0.01
+    static colors = {
+        0: 0x00ff00,
+        1: 0xff0000,
+        2: 0xffff00,
+        3: 0x0000ff,
+        4: 0xffa500
+    }; // Green, Red, Yellow, Blue, Orange
 
-    constructor(index, laneWidth, laneHeight, fretboardWidth, pickupHeight, pickupOffset, colors, asLines=true) {
+    constructor(index, laneWidth, laneHeight, fretboardWidth, pickupHeight, pickupOffset) {
         this.index = index;
         this.notes = {};
         this.laneWidth = laneWidth;
         this.laneHeight = laneHeight;
-        this.colors = colors;
 
         this.collidingNote = null;
 
@@ -19,18 +25,14 @@ export default class Lane {
         this.pickupOffset = pickupOffset;
         this.z = Lane.lane_z;
 
-        if (asLines) {
-            const isMetallic = true;
-            // this.createLineLane(isMetallic);
-            this.createCylinderLane(isMetallic)
-        } else {
-            this.createPlaneLane();
-        }
+        const isMetallic = true;
+        // this.createLineLane(isMetallic);
+        this.createCylinderLane(isMetallic)
     }
 
     createPlaneLane() {
         this.geometry = new THREE.PlaneGeometry(this.laneWidth, this.laneHeight);
-        this.material = new THREE.MeshBasicMaterial({ color: this.colors[this.index], wireframe: false }); // Adjust color as needed
+        this.material = new THREE.MeshBasicMaterial({ color: Lane.colors[this.index], wireframe: false }); // Adjust color as needed
         this.mesh = new THREE.Mesh(this.geometry, this.material);
         this.mesh.position.set(
             this.x,
