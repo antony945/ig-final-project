@@ -103,17 +103,6 @@ export default class Lane {
         Object.keys(this.notes).forEach(measure => this.notes[measure].addToScene(scene));
     }
 
-    addNote(measure) {
-        // Only one note for measure at time
-        if (!this.notes[measure]) {
-            const note = new Note(this.index, this.x, this.z, this.laneWidth/4, this.laneWidth, this.laneHeight, this.colors[this.index]);
-            this.notes[measure] = note;
-            return note
-        }
-
-        return null;
-    }
-
     getNote(measure) {
         return this.notes[measure];
     }

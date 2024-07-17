@@ -1,19 +1,21 @@
 import * as THREE from 'three';
 
 export default class Note {
-    constructor(laneIndex, lane_x, lane_z, noteRadius, laneWidth, laneHeight, color) {
+    constructor(tickIndex, laneIndex, start_x, start_y, start_z, noteRadius, laneWidth, laneHeight, color) {
+        this.tickIndex = tickIndex;
         this.laneIndex = laneIndex;
         this.noteRadius = noteRadius;
         this.laneWidth = laneWidth;
         this.laneHeight = laneHeight;
         this.color = color;
-        this.x = lane_x;
-        this.z = lane_z;
+        this.x = start_x;
+        this.z = start_z;
+        this.start_y = start_y;
         this.max_y = laneHeight / 2;
         this.min_y = -laneHeight / 2;
 
         // Start from the top and ensure it is in front of the fretboard
-        this.starting_position = new THREE.Vector3(this.x, this.max_y, this.z);
+        this.starting_position = new THREE.Vector3(this.x, this.start_y, this.z);
 
         // Define materials
         const mainMaterial = new THREE.MeshStandardMaterial({
@@ -35,7 +37,6 @@ export default class Note {
         // this.mesh = this.createMesh(8, mainMaterialSpecial, sideMaterial);
 
         // Other parameters
-        this.speed = 0.1;
         this.collided = false;
         this.accuracy = 0;
         this.hit = false;
@@ -89,25 +90,25 @@ export default class Note {
         // this.mesh.position.copy(this.starting_position);
     }
 
-    update() {
-        // console.log(this.mesh.position);
-        this.mesh.position.y -= this.speed;
+    // update() {
+    //     // console.log(this.mesh.position);
+    //     this.mesh.position.y -= this.speed;
         
-        if (this.mesh.position.y < this.min_y) {
-            // Note has reached the bottom of the lane
-            // this.mesh.visible = false;
-            this.reset();
-        }
-    }
+    //     if (this.mesh.position.y < this.min_y) {
+    //         // Note has reached the bottom of the lane
+    //         // this.mesh.visible = false;
+    //         this.reset();
+    //     }
+    // }
     
-    reset() {
-        // Put it back on topgrou
-        this.mesh.position.copy(this.starting_position);
-        // Reset other parameters
-        this.accuracy = 0;
-        this.collided = false;
-        this.hit = false;
-    }
+    // reset() {
+    //     // Put it back on topgrou
+    //     this.mesh.position.copy(this.starting_position);
+    //     // Reset other parameters
+    //     this.accuracy = 0;
+    //     this.collided = false;
+    //     this.hit = false;
+    // }
 
     addToScene(scene) {
         scene.add(this.mesh);

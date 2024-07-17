@@ -22,6 +22,7 @@ export default class NoteManager {
 
     constructor(fretboard, beatsPerMinute, beatsPerMeasure, song, notesFile) {
         this.fretboard = fretboard;
+
         this.song = song;
         
         // Starting from the song, it extracts information about measure
@@ -50,6 +51,8 @@ export default class NoteManager {
         this.totalTicks = 0;
         this.tickLines = this.createFretboardTicks(this.fretboard, this.DEFAULT_FPS);
 
+        this.setupSpeed();
+
         // Notes stored in dictionary ordered by their half beat count
         // this.notesDict = this.importNotes(notesFile);
 
@@ -57,9 +60,9 @@ export default class NoteManager {
         this.laneLength = this.fretboard.laneHeight;        
         this.lanes = this.fretboard.lanes;
 
-
         // It all starts from 0, will use this to create
-        this.currentTickIndex = 0;
+        this.currentTickCounter = 0;
+        this.currentNotes = {};
     }
 
     incrementCount() {
@@ -77,7 +80,6 @@ export default class NoteManager {
     isHalfBeat() {
         return this.halfBeatCount%2 === 1;
     }
-
 
     // https://songbpm.com/@franz-ferdinand/take-me-out
     init(songData) {
@@ -106,6 +108,37 @@ export default class NoteManager {
         // EBAT_SPACE = TICK_SPACE * 2
         // MEASURE_SPACE = BEAT_SPACE * X
 
+        // Decide how many ticks to create
+        // Best idea: create this.tickPerMeasure that will every time cycle
+        // use visibleTickLines only if it's grater than ticksPerMeasure
+        this.totalTicks = this.ticksPerMeasure;
+        if (this.totalTicks < this.visibleTickLinesCount) {
+            this.totalTicks = this.visibleTickLinesCount; 
+        }
+
+        const tickLines = []
+        // this.totalTicks = 2;
+        for (let tickIndex = 0; tickIndex < this.totalTicks; tickIndex++) {
+            // Create tick line passing fretboard width and height (and offset probably)
+            const tickLine = new Tick(
+                tickIndex,
+                this.ticksPerMeasure,
+                this.tickSpace,
+                fretboard.width,
+                fretboard.height,
+                fretboard.pickupOffset,
+                fretboard.holeRadius
+            );
+            
+            tickLines.push(tickLine);
+        }
+
+        // TODO: Disable visibility for lanes out of scope
+
+        return tickLines; 
+    }
+
+    setupSpeed() {
         // lane_speed, calculated by knowing that we want a default number of beats lines on the screen
         // e.g.
         // DEFAULT_VISIBLE_BEAT_LINES = TIME_TO_REACT (s) * BPS (beat/s) = [beat]
@@ -115,34 +148,10 @@ export default class NoteManager {
         // AND SO
         // lane_speed = LANE_LENGTH/TIME_TO_REACT / FPS [ threejs.uom / frame]
         // decide if check sometime how many fps we have in order to speedup or not the game
-
-
-        // Decide how many ticks to create
-        // Best idea: create this.tickPerMeasure that will every time cycle
-        // use visibleTickLines only if it's grater than ticksPerMeasure
-        this.totalTicks = this.ticksPerMeasure;
-        if (this.totalTicks < this.visibleTickLinesCount) {
-            this.totalTicks = this.visibleTickLinesCount; 
-        }
-        console.log(this.ticksPerMeasure)
-        console.log(this.visibleTickLinesCount)
-        console.log(this.totalTicks)
-
-        const tickLines = []
-        for (let tickIndex = 0; tickIndex < this.totalTicks; tickIndex++) {
-            // Create tick line passing fretboard width and height (and offset probably)
-            const tickLine = new Tick(
-                tickIndex,
-                this.tickSpace,
-                this.ticksPerMeasure,
-                fretboard.width,
-                fretboard.pickupY
-            );
-        
-            tickLines.push(tickLine);
-        }
-
-        return tickLines; 
+        // this.speed = (this.fretboard.height / (this.visibleBeatLinesCount * this.beatDuration)) / NoteManager.defaultFPS;
+        this.speed = (this.fretboard.height / (NoteManager.timeToReactMillisecond/1000));
+        // console.log("speed ", this.speed1)
+        // console.log("speed ", this.speed2)
     }
 
     addTicksToScene(scene) {
@@ -160,8 +169,53 @@ export default class NoteManager {
         // Assign note to every beat
     }
 
-    update() {
-        this.notes.forEach(note => note.update());
+    addNoteToLanes(measure, ...laneIndexes) {
+        const addedNotes = [];
+
+        // Convert measure from 0 to 7
+        measure = measure % this.ticksPerMeasure;
+
+        // Get tickLine
+        const currentTick = this.tickLines[measure]
+        console.log(currentTick);
+
+        // Create here the note and pass it to the tick
+        laneIndexes.forEach(laneIndex => {
+            const lane = this.lanes[laneIndex];
+            const note = new Note(currentTick.tickIndex, laneIndex, lane.x, currentTick.mesh.position.y, lane.z, this.fretboard.laneWidth/4, this.fretboard.laneWidth, this.fretboard.laneHeight, this.fretboard.colors[laneIndex]);
+            const addedNote = currentTick.addNoteToLane(laneIndex, note);
+            if (addedNote) {
+                addedNotes.push(addedNote);
+            }
+        });
+
+        return addedNotes;
+    }
+
+    update(fps) {
+        const speed = this.speed/fps;
+
+        // Update tick lines
+        this.tickLines.forEach(tl => {
+            tl.update(speed);
+        });
+
+        // Check if one of them has collided
+        this.currentTick = this.tickLines.filter((tl) => tl.collided)
+        if (this.currentTick.length > 0) {
+            this.currentTick = this.currentTick[0]
+            this.currentNotes = this.currentTick.notes;
+        } else {
+            this.currentNotes = {}
+        }
+    }
+
+    getCurrentNotes() {
+        return Object.values(this.currentNotes);
+    }
+
+    getCurrentNotesLaneIndexes() {
+        return Object.keys(this.currentNotes).map(Number);
     }
 
     checkCollision() {

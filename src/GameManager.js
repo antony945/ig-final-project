@@ -37,13 +37,9 @@ export default class GameManager {
         
         // Load note
         // TODO: For now set all measures to -1
-        const measure = -1;
-        const notes = this.fretboard.addNoteToLane(measure, 0, 1, 2);
+        const measure = 0;
+        const notes = this.noteManager.addNoteToLanes(measure, 0);
         notes.forEach(n => this.scene.add(n.mesh));
-        // this.fretboard.addNoteToLane(1);
-        // this.fretboard.addNoteToLane(2);
-        // this.fretboard.addNoteToLane(3);
-        // this.fretboard.addNoteToLane(4);
 
         // Add lights
         this.addLights();
@@ -110,7 +106,7 @@ export default class GameManager {
 
     resumeGame() {
         // Resume animations
-        this.gameLoop();
+        this.startGameLoop();
 
         // Resume audio
         this.audioManager.resumeActiveSounds();
@@ -406,20 +402,22 @@ export default class GameManager {
         // t1 -> note on red
 
         // currentNotes will vary from 0 to 4
-        const currentNotes = this.fretboard.getCurrentNotes();
+        const currentNotes = this.noteManager.getCurrentNotes();
+        
         // const currentNotes = [];
-        // console.log(currentNotes);
-
+        console.log(currentNotes);
+        
         // I want currentNotesLaneIndexes to store for every element n in currentNotes, the element n.laneIndex       
         // Compare them using a set
-        const currentNotesLaneIndexes = new Set(currentNotes.map(note => note.laneIndex));
+        const currentNotesLaneIndexes = new Set(this.noteManager.getCurrentNotesLaneIndexes());
+        // const currentNotesLaneIndexes = new Set(currentNotes.map(note => note.laneIndex));
         const pressedLanesIndexes = new Set(this.getPressedLanes());
 
         // Check if we are pressing ALL AND ONLY the lanes of the currentNotes        
         const correctPress = Utils.EqualsSets(currentNotesLaneIndexes, pressedLanesIndexes);
-        // console.log(currentNotesLaneIndexes);
-        // console.log(pressedLanesIndexes);
-        // console.log(correctPress)
+        console.log(currentNotesLaneIndexes);
+        console.log(pressedLanesIndexes);
+        console.log(correctPress)
 
         // Strummed with no loaded notes -> SHAKE and NOTE MISS
         if (currentNotes.length == 0 || ! correctPress) {
@@ -435,15 +433,17 @@ export default class GameManager {
             // Hit them all
             currentNotes.forEach(note => {
                 // TODO: Use another animation with flames
-                this.fretboard.enableNoteHitEffect(note.laneIndex, note);
+                this.fretboard.enableNoteHitEffect(note.laneIndex, this.noteManager.currentTick);
 
                 // TODO: Need better way to handle note hit or miss, maybe in the noteManager
                 // Note hit, handle hit
                 this.scoreManager.handleHit(note.starNote);
+
                 // Remove the note or mark it as hit
+                // this.noteManager.handleHit(note.tickIndex);
                 // lane.removeNote(note);
                 note.hit = true;
-                note.removeFromScene(this.scene);
+                // note.removeFromScene(this.scene);
             });
         } else {
             // Or there are no notes and you strummed or you didn't press
@@ -455,28 +455,39 @@ export default class GameManager {
         if (this.isPaused) return; // Skip the animation frame if the game is paused
         // Will be invoked again from resumeGame() function
         
+        this.thisLoop = new Date();
         this.stats.begin(); // Begin measuring FPS
         
-        // this.noteManager.update();
+        // console.log(this.fps)
+        this.noteManager.update(this.fps);
 
         // this.updateLights();
         this.updateLaneAnimations();
         
-
         this.cameraShake.update(this.camera);
         // this.screenShake.update(this.camera);
 
         this.controls.update();
-        this.fretboard.update(); // Update lanes and notes
+        // this.fretboard.update(); // Update lanes and notes
     
         this.renderer.render(this.scene, this.camera);
         this.stats.end(); // End measuring FPS
+        this.fps = 1000 / (this.thisLoop - this.lastLoop);
+        this.lastLoop = this.thisLoop;
+
         requestAnimationFrame(this.gameLoop.bind(this));
     }
 
     // Starts the game and runs gameLoop
     startGame() {
         this.audioManager.startAudioSequence();
+        
+        this.startGameLoop();
+    }
+
+    startGameLoop() {
+        this.fps = 60;
+        this.lastLoop = new Date();
         this.gameLoop();
     }
 }

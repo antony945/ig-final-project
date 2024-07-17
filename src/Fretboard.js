@@ -168,37 +168,6 @@ export default class Fretboard {
         return pressEffects;
     }
 
-    addNoteToLane(measure, ...laneIndexes) {
-        const addedNotes = [];
-
-        if (!this.notesLaneIndexes[measure]) {
-            this.notesLaneIndexes[measure] = [];
-        }
-
-        
-        laneIndexes.forEach(laneIndex => {
-            const note = this.lanes[laneIndex].addNote(measure);
-            
-            if (note) {
-                this.notesLaneIndexes[measure].push(laneIndex);
-                addedNotes.push(note);
-            }
-        });
-
-        return addedNotes;
-    }
-
-    getNotes(measure) {
-        return this.notesLaneIndexes[measure].map(laneIndex => this.lanes[laneIndex].getNote(measure));
-    }
-
-    getCurrentNotes() {
-        return this.currentNotes;
-        
-        // or
-        return this.getNotes(this.currentMeasure);
-    }
-
     addToScene(scene) {
         scene.add(this.mesh);
         // TODO: Comment this line if you decide to have Lanes as childrens of Fretboard
@@ -262,20 +231,20 @@ export default class Fretboard {
         this.pressEffects[laneIndex].visible = false;
     }
 
-    enableNoteHitEffect(laneIndex, hittedNote) {
-        console.log("NOTE IN " + laneIndex + " WAS HIT WITH ACCURACY OF "+parseFloat(hittedNote.accuracy).toFixed(2)+"%")
+    enableNoteHitEffect(laneIndex, hittedLine) {
+        console.log("NOTE IN " + laneIndex + " WAS HIT WITH ACCURACY OF "+parseFloat(hittedLine.accuracy).toFixed(2)+"%")
     }
 
-    update() {
-        // if (isPaused) return;
+    // update() {
+    //     // if (isPaused) return;
 
-        // Reset currentNotes
-        this.currentNotes = [];
-        this.lanes.forEach((lane, index) => {
-            const collidingNote = lane.update(this.holeMeshes[index]);
-            if (collidingNote) {
-                this.currentNotes.push(collidingNote);
-            }
-        });
-    }
+    //     // Reset currentNotes
+    //     this.currentNotes = [];
+    //     this.lanes.forEach((lane, index) => {
+    //         const collidingNote = lane.update(this.holeMeshes[index]);
+    //         if (collidingNote) {
+    //             this.currentNotes.push(collidingNote);
+    //         }
+    //     });
+    // }
 }
