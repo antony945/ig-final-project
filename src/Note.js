@@ -22,8 +22,8 @@ export default class Note {
         // Define materials
         const mainMaterial = new THREE.MeshStandardMaterial({
             color: this.color, // Base color of the material
-            metalness: 0.4,  // Fully metallic
-            roughness: 0.2   // Slightly smooth for a reflective look
+            metalness: 0.8,  // Fully metallic
+            roughness: 0.4   // Slightly smooth for a reflective look
         });
         const sideMaterial = new THREE.MeshStandardMaterial({
             color: 0xffffff
@@ -33,10 +33,10 @@ export default class Note {
 
         if (! starPowerActive) {
             // Normal circular noteù
-            this.mesh = this.createMesh(32, mainMaterial, sideMaterial, isSpecial);
+            this.mesh = this.createMesh(mainMaterial, sideMaterial, isSpecial);
         } else {
             // Special octagonal note
-            this.mesh = this.createMesh(8, mainMaterialSpecial, sideMaterial, isSpecial);
+            this.mesh = this.createMesh(mainMaterialSpecial, sideMaterial, isSpecial);
         }
 
         // this.mesh.castShadow = true; // Ensure the note casts shadows
@@ -50,13 +50,13 @@ export default class Note {
         this.isSpecial = isSpecial;
     }
 
-    createMesh(numSides, mainMaterial, sideMaterial, isSpecial) {
+    createMesh(mainMaterial, sideMaterial, isSpecial) {
         const bottomRadius = .95*this.noteRadius;
-        const topRadius = .5*this.noteRadius;  
+        const topRadius = .4*this.noteRadius;  
         // const topTopRadius = .3*this.noteRadius;
         const bottomHeight = .3*this.noteRadius;
         const centralHeight = .4*this.noteRadius;
-        const topHeight = .15*this.noteRadius;
+        const topHeight = .1*this.noteRadius;
 
         // Bottom + Central mesh - Colored half-cone
         // var bottomMesh, centralMesh;
@@ -90,6 +90,8 @@ export default class Note {
     }
 
     createNormalMeshes(topRadius, bottomRadius, centralHeight, bottomHeight, topHeight, sideMaterial, mainMaterial) {
+        bottomRadius *= 1.25;
+        
         const bottomGeometry = new THREE.CylinderGeometry(bottomRadius, bottomRadius, bottomHeight, 32, 1);
         // const bottomGeometry = new THREE.TorusGeometry(bottomRadius, smallHeight, 12, 32);
         const bottomMesh = new THREE.Mesh(bottomGeometry, sideMaterial);
@@ -107,7 +109,7 @@ export default class Note {
         const topMesh = new THREE.Mesh(topGeometry, sideMaterial);
         topMesh.rotation.x = Math.PI / 2;
         topMesh.rotation.y = Math.PI / 2;
-        topMesh.position.z = centralHeight + bottomHeight - topHeight/2;
+        topMesh.position.z = centralHeight + bottomHeight - topHeight;
         return {
             bottom: bottomMesh,
             central: centralMesh,
@@ -211,7 +213,7 @@ export default class Note {
         const topMesh = new THREE.Mesh(topGeometry, sideMaterial);
         topMesh.rotation.x = Math.PI / 2;
         topMesh.rotation.y = Math.PI / 2;
-        topMesh.position.z = centralHeight + bottomHeight - topHeight/2;
+        topMesh.position.z = centralHeight + bottomHeight - topHeight;
         return {
             bottom: bottomMesh,
             central: centralMesh,
