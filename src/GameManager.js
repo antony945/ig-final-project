@@ -25,6 +25,13 @@ export default class GameManager {
 
         // Create noteManager
         this.setupNoteManager(142, 4, 'songs/sample.json');
+        
+        // Initialize audio
+        // this.setupAudioManager('songs/s0/take_me_out.mp3', 'songs/s0/song.ini');
+        // this.setupAudioManager('songs/s0/take_me_out.mp3', 'songs/s0/song.ini');
+        this.setupAudioManager('songs/s0');
+        const bgImgPath = 'bg/album.jpg'
+        // const bgImgPath = 'songs/s1/album.jpg'
 
         // Add lights
         this.addLights();
@@ -48,16 +55,13 @@ export default class GameManager {
         // Initialize input
         this.setupInputManager();
 
-        // Initialize audio
-        this.setupAudioManager();
-
         // Initalize pause
         this.isPaused = false;
         // Add pause overlay
         this.createPauseOverlay();
 
         // Initialize background
-        this.setupBackgroundManager();
+        this.setupBackgroundManager(bgImgPath);
     }
 
     setupFretboard(width, height, textureFile, numLanes) {
@@ -79,8 +83,7 @@ export default class GameManager {
         this.scoreManager = new ScoreManager();
     }
 
-    setupBackgroundManager() {
-        const bgImgPath = 'bg/album.jpg'
+    setupBackgroundManager(bgImgPath) {
         this.backgroundManager = new BackgroundManager(bgImgPath, this.scene, this.gui);
     }
 
@@ -146,7 +149,7 @@ export default class GameManager {
         // this.noteManager.addNextNotesToScene(this.scene);
     }
 
-    setupAudioManager() {
+    setupAudioManager(mainSongFolder) {
         const soundEffects = {
             // noteHit: ['path/to/noteHit.mp3'],
             songStart: ['effects/song_start_1.mp3', 'effects/song_start_2.mp3', 'effects/song_start_3.mp3'],
@@ -155,12 +158,54 @@ export default class GameManager {
             // Add other sound effects as needed
         };
 
+        const mainSongAudioFile = mainSongFolder + '/full_song.mp3';
+        const mainSongIniFile = mainSongFolder + '/song.ini';
+        const mainSongImgFile = mainSongFolder + '/album.jpg';
+
         this.audioManager = new AudioManager(
-            'songs/s0/take_me_out.mp3',
-            'songs/s0/song.ini',
+            mainSongAudioFile,
+            mainSongIniFile,
             soundEffects,
             this.listener
         );
+
+        this.songProperties = this.audioManager.getSongProperties();
+        console.log(this.songProperties)
+        this.initMusicPlayer(mainSongImgFile);
+        this.updateMusicPlayer(this.songProperties);
+    }
+
+    initMusicPlayer(img) {
+        // Create HTML elements for the music player
+        this.musicPlayer = document.createElement('div');
+        this.musicPlayer.id = 'music-player';
+        this.musicPlayer.style.display = 'none';
+        document.body.appendChild(this.musicPlayer);
+
+        this.songImage = document.createElement('img');
+        this.songImage.id = 'song-image';
+        this.songImage.src = img;
+        this.musicPlayer.appendChild(this.songImage);
+
+        this.songName = document.createElement('p');
+        this.songName.id = 'song-name';
+        this.musicPlayer.appendChild(this.songName);
+
+        // this.songDuration = document.createElement('p');
+        // this.songDuration.id = 'song-duration';
+        // this.musicPlayer.appendChild(this.songDuration);
+
+        // this.updateMusicPlayer();
+
+        // this.mainSong.onEnded(() => this.updateDuration());
+        // this.mainSong.onEnded(() => this.updateDuration());
+    }
+
+    updateMusicPlayer(songProperties) {
+        this.musicPlayer.style.display = 'block';
+        if (songProperties) {
+            this.songName.textContent = `${songProperties.name} - ${songProperties.artist}`;
+        }
     }
 
     init() {
