@@ -285,15 +285,12 @@ export default class NoteManager {
     // }
 
     getCurrentNotes() {
-        console.log(this.currentTick)
         if (! this.currentTick) return []
-
         return this.currentTick.getNotes();
     }
 
     getCurrentNotesLaneIndices() {
         if (! this.currentTick) return []
-
         return this.currentTick.getNotesLaneIndices();
     }
 

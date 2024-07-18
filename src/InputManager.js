@@ -1,6 +1,7 @@
 export default class InputManager {
 
     constructor(gameManager) {
+        // TODO: Understand why doesn't work with 5 key at the same time
         this.keyMap = {
             'A': 0,
             'S': 1,
@@ -36,18 +37,20 @@ export default class InputManager {
 
     onKeyUp(e) {
         if (this.keyMap[e.key.toUpperCase()] !== undefined) {
+            // this.keysPressed[e.key.toUpperCase()] = false;
             delete this.keysPressed[e.key.toUpperCase()];
         }
     }
 
-    isLaneKeyPressed() {
-        return Object.keys(this.keysPressed).some(key => this.keyMap[key] !== 'strum');
+    isLaneKeyPressed(laneIndex) {
+        return Object.keys(this.keysPressed).some(key => this.keyMap[key] === laneIndex);
     }
 
     getPressedLanes() {
         return Object.keys(this.keysPressed)
             .filter(key => this.keyMap[key] !== 'strum')
             .map(key => this.keyMap[key]);
+        return o;
     }
 
     isStrumPressed() {

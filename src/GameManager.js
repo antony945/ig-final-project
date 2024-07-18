@@ -339,7 +339,8 @@ export default class GameManager {
     updateStrumAnimation(pressedLanes) {
         // Called on strum keyDown
         const currentNotes = this.noteManager.getCurrentNotes(); // currentNotes will vary from 0 to 4        
-        
+        console.log(currentNotes)
+
         // I want currentNotesLaneIndexes to store for every element n in currentNotes, the element n.laneIndex       
         // Compare them using a set
         const currentNotesLaneIndices = new Set(this.noteManager.getCurrentNotesLaneIndices());
