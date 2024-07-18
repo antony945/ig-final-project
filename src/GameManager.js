@@ -21,30 +21,10 @@ export default class GameManager {
         // this.addFog();
         
         // Create fretboard
-        this.fretboard = new Fretboard(
-            5,  // width
-            15, // height
-            'textures/fretboard.jpg',   // texture
-            5   // numLanes
-        );
-        // this.fretboard = new Fretboard(5, 15, 5, 'textures/GH2_beta-Metal.png');
-        this.fretboard.addToScene(this.scene);
+        this.setupFretboard(5, 15, 'textures/fretboard.jpg', 5)
 
         // Create noteManager
-        this.noteManager = new NoteManager(
-            this.fretboard,
-            142,
-            4,
-            null,
-            null
-        );
-        this.noteManager.addTicksToScene(this.scene);
-        
-        // Load note
-        // TODO: For now set all measures to -1
-        const measure = 0;
-        const notes = this.noteManager.addNoteToLanes(measure, 0);
-        notes.forEach(n => this.scene.add(n.mesh));
+        this.setupNoteManager(142, 4, 'songs/sample.json');
 
         // Add lights
         this.addLights();
@@ -78,6 +58,17 @@ export default class GameManager {
 
         // Initialize background
         this.setupBackgroundManager();
+    }
+
+    setupFretboard(width, height, textureFile, numLanes) {
+        this.fretboard = new Fretboard(
+            width,
+            height,
+            textureFile,
+            numLanes
+        );
+        // this.fretboard = new Fretboard(5, 15, 5, 'textures/GH2_beta-Metal.png');
+        this.fretboard.addToScene(this.scene);
     }
 
     setupInputManager() {
@@ -140,6 +131,19 @@ export default class GameManager {
         this.pauseOverlay.style.display = 'none';
         // this.pauseOverlay.innerText = 'Game Paused - Press ESC to Resume';
         document.body.appendChild(this.pauseOverlay);
+    }
+
+    setupNoteManager(beatsPerMinute, beatsPerMeasure, notesFile) {
+        this.noteManager = new NoteManager(
+            this.fretboard,
+            beatsPerMinute,
+            beatsPerMeasure,
+            notesFile,
+            this.audioManager,
+        );
+        this.noteManager.addTicksToScene(this.scene);
+        this.noteManager.addAllNotesToScene(this.scene);
+        // this.noteManager.addNextNotesToScene(this.scene);
     }
 
     setupAudioManager() {
@@ -353,8 +357,7 @@ export default class GameManager {
             const currentTick = this.noteManager.currentTick;
             
             // Update score, re-put volume as original and generate hit effect 
-            currentTick.handleHit(this.scoreManager, this.audioManager);
-
+            currentTick.handleHit(this.scoreManager, this.audioManager, this.scene);
         } else { // MISS or OVERSTRUM
 
             this.shakeCamera();
@@ -379,8 +382,8 @@ export default class GameManager {
         const pressedLanesIndices = this.inputManager.getPressedLanes();
         
         // console.log(this.fps)
-        const tickSpeed = this.noteManager.update(this.scoreManager, this.audioManager, this.fps); // Update ticks and notes position and handles miss without strumming
-        this.fretboard.update(pressedLanesIndices, tickSpeed); // Update fretboard texture and press effects
+        this.noteManager.update(this.scoreManager, this.audioManager, this.fps, this.scene); // Update ticks and notes position and handles miss without strumming
+        this.fretboard.update(pressedLanesIndices, this.noteManager.tickSpeed); // Update fretboard texture and press effects
         
         this.cameraShake.update(this.camera);
         // this.screenShake.update(this.camera);

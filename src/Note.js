@@ -2,8 +2,9 @@ import * as THREE from 'three';
 
 export default class Note {
     // TODO: Support starPower parameter to change appearance during starPower
-    constructor(tickIndex, laneIndex, start_x, start_y, start_z, noteRadius, laneWidth, laneHeight, color, starPowerActive=false) {
-        this.tickIndex = tickIndex;
+    constructor(measure, tick, laneIndex, start_x, start_y, start_z, noteRadius, laneWidth, laneHeight, color, isSpecial=false, starPowerActive=false) {
+        this.measure = measure;
+        this.tick = tick;
         this.laneIndex = laneIndex;
         this.noteRadius = noteRadius;
         this.laneWidth = laneWidth;
@@ -46,7 +47,7 @@ export default class Note {
         this.accuracy = 0;
         this.hitted = false;
         // Is true if the note is part of the loading star power phase
-        this.isStarNote = false;
+        this.isSpecial = isSpecial;
     }
 
     createMesh(numSides, mainMaterial, sideMaterial) {
@@ -115,14 +116,15 @@ export default class Note {
     // }
 
     addToScene(scene) {
+        this.mesh.visible = false;
         scene.add(this.mesh);
     }
 
     removeFromScene(scene) {
-        // scene.remove(this.mesh);
+        scene.remove(this.mesh);
         // TODO: This would have to remove the note from the scene once hitted
         // But now for testing purpose it's just reset it on original position
-        this.reset();
+        // this.reset();
     }
 
     checkCollision(pickupHoleMesh) {

@@ -1,0 +1,39 @@
+{
+    "songInfo": {
+      "title": "Take Me Out",
+      "author": "Franz Ferdinand",
+      "year": 2004,
+      "bpm": 142,
+      "resolution": 8
+    },
+    "notes": [
+      "begin_loading_star_phase",
+      {
+        "measure": 0,
+        "tick": 1,
+        "lanes": [0]
+      },
+      {
+        "measure": 1,
+        "tick": 1,
+        "lanes": [1]
+      },
+      {
+        "measure": 2,
+        "tick": 0,
+        "lanes": [2]
+      },
+      {
+        "measure": 3,
+        "tick": 0,
+        "lanes": [3]
+      },
+      {
+        "measure": 4,
+        "tick": 0,
+        "lanes": [4]
+      },
+      "end_loading_star_phase"
+    ]
+  }
+  

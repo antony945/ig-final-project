@@ -2,6 +2,7 @@ import Note from './Note.js';
 import Lane from './Lane.js';
 import Tick from './Tick.js';
 import Fretboard from './Fretboard.js';
+import songData from '../public/songs/sample.json'
 
 // SPEED SHOULD BE SPACE / TIME
 // SPACE  IS HOW MUCH SPACE I WANT TO COVER
@@ -19,16 +20,13 @@ export default class NoteManager {
     static timeToReactMillisecond = 2000;
     static ticksPerBeat = 2;
     static defaultFPS = 60;
+    static introMeasures = 4
 
-    constructor(fretboard, beatsPerMinute, beatsPerMeasure, song, notesFile) {
+    constructor(fretboard, beatsPerMinute, beatsPerMeasure, notesFile, mainSong) {
         this.fretboard = fretboard;
-        this.song = song;
+        this.mainSong = mainSong;   // To sync audio with notes
         
         // Starting from the song, it extracts information about measure
-        // BPM
-        // BPS = BPM/60
-        // SECONDS PER BEAT (beat duration seconds) = 60/BPM (crotched duration)
-        // measure duration = beat duration * X with X/4 (most of the time 4/4, X=4)
         this.beatsPerMinute = beatsPerMinute;
         this.beatsPerMeasure = beatsPerMeasure;
         this.ticksPerMeasure = NoteManager.ticksPerBeat*this.beatsPerMeasure;
@@ -43,44 +41,77 @@ export default class NoteManager {
         this.visibleTickLinesCount = this.visibleBeatLinesCount*NoteManager.ticksPerBeat;
         // TICK_SPACE = LANE_LENGTH/(TIME_TO_REACT (s) * BeatPerSecond * 2)
         // TICK_SPACE = LANE_LENGTH/(DEFAULT_VISIBLE_BEAT_LINES*2)
-        this.tickSpace = this.fretboard.fretboardHeight / this.visibleTickLinesCount;       
+        this.tickSpace = this.fretboard.fretboardHeight / this.visibleTickLinesCount;
+        this.measureSpace = this.tickSpace*this.ticksPerMeasure;   
 
+        // Setup speed
         this.speed = 0;
         this.tickSpeed = 0;
         this.setupSpeed();
 
-        // Notes stored in dictionary ordered by their half beat count
-        // this.notesDict = this.importNotes(notesFile);
-
-        // It all starts from 0, will use this to create
+        // It all starts from 0, will use this
         this.currentTick = null;
         this.currentTickCounter = 0;
+        this.currentMeasureCounter = -(NoteManager.introMeasures);
+        this.totalTickCounter = this.getTotalTickCounter(this.currentMeasureCounter, this.currentTickCounter);
 
-        // Initialize fretboard (halfBeatLines will contain all the visible lines in the fretboard)
-        // they will cycle
+        // Initialize fretboard (halfBeatLines will contain all the visible lines in the fretboard) - they will cycle
         this.totalTicks = 0;
         this.tickLines = this.createFretboardTicks(this.fretboard);
+
+        // Import notes from a note file where it's written their measure, beat, semi-beat, location and maybe the hold (and if they are in a loading star phase or not)
+        // this.loadNotesFromFile(notesFile).then(addedNotes => {
+        //     this.allNotes = addedNotes;
+        // });
+        this.allNotes = this.loadNotesFromJson(songData)
+        this.allNotesIndex = 0;
     }
 
-    incrementCount() {
-        this.totalTicks=(this.totalTicks+1)%(this.ticksPerMeasure)
+    getMeasureCounter(totalTickCounter) {
+        return Math.floor(totalTickCounter / this.ticksPerMeasure)
     }
 
-    isMeasure() {
-        return this.halfBeatCount === 0;
+    getTickCounter(totalTickCounter) {
+        return (totalTickCounter % this.ticksPerMeasure)
     }
 
-    isBeat() {
-        return this.halfBeatCount%2 === 0;
+    getTotalTickCounter(measureCounter, tickCounter) {
+        return measureCounter*this.ticksPerMeasure + tickCounter
     }
 
-    isHalfBeat() {
-        return this.halfBeatCount%2 === 1;
+    async loadNotesFromFile(filePath) {
+        try {
+            const response = await fetch(filePath);
+            const jsonData = await response.json();
+            return this.loadNotesFromJson(jsonData);
+        } catch (error) {
+            console.error('Error loading JSON file:', error);
+            return null;
+        }
     }
 
     // https://songbpm.com/@franz-ferdinand/take-me-out
-    init(songData) {
-        
+    loadNotesFromJson(songData) {
+        const songInfo = songData.songInfo;
+        const notes = songData.notes;
+
+        const addedNotes = [];
+
+        let loadingStarPhase = false;
+        notes.forEach(item => {
+            if (item === "begin_loading_star_phase") {
+                loadingStarPhase = true;
+            } else if (item === "end_loading_star_phase") {
+                loadingStarPhase = false;
+            } else {
+                const measure = item.measure;
+
+                addedNotes.push(...this.createNotes(measure, item.tick, loadingStarPhase, ...item.lanes));
+            };
+        });
+
+        // console.log(addedNotes)
+        return addedNotes;
     }
 
     // Create just the visible ones and every time one will go away, a new one will be created
@@ -113,9 +144,9 @@ export default class NoteManager {
         if (this.totalTicks < this.visibleTickLinesCount) {
             this.totalTicks = this.visibleTickLinesCount;
         }
+        // console.log(this.totalTicks)
 
         const tickLines = []
-        // this.totalTicks = 2;
 
         for (let tickIndex = 0; tickIndex < this.totalTicks; tickIndex++) {
             // Create tick line passing fretboard width and height (and offset probably)
@@ -123,6 +154,7 @@ export default class NoteManager {
                 tickIndex,
                 this.ticksPerMeasure,
                 this.tickSpace,
+                this.totalTicks,
                 this.fretboard.fretboardWidth,
                 this.fretboard.fretboardHeight,
                 this.fretboard.pickupOffset,
@@ -154,42 +186,103 @@ export default class NoteManager {
         // console.log("speed ", this.speed2)
     }
 
+    createNotes(measure, tick, isSpecial, ...laneIndexes) {
+        const addedNotes = [];
+
+        // Get tickLine
+        const currentTick = this.tickLines[tick]
+
+        // Create here the note and pass it to the tick
+        laneIndexes.forEach(laneIndex => {
+            const lane = this.fretboard.lanes[laneIndex];
+
+            // Create all notes already in their position (even outside the lane)
+            const noteY = currentTick.mesh.position.y + this.measureSpace * measure
+            const note = new Note(measure, currentTick.tickIndex, laneIndex, lane.x, noteY, lane.z, this.fretboard.laneWidth/4, this.fretboard.laneWidth, this.fretboard.laneHeight, Fretboard.colors[laneIndex], isSpecial);
+            addedNotes.push(note);
+        });
+        
+        return addedNotes;
+    }
+
     addTicksToScene(scene) {
         this.tickLines.forEach(tl => {
             tl.addToScene(scene);
         });
     }
 
-    importNotes(noteFile) {
-        // Import notes from a note file where it's written their measure, beat, semi-beat, location and maybe the hold (and if they are in a loading star phase or not)
-    }
-
-    generateNotes() {
-        // Generate notes based on song data and assign them to lanes
-        // Assign note to every beat
-    }
-
-    addNoteToLanes(measure, ...laneIndexes) {
-        const addedNotes = [];
-
-        // Convert measure from 0 to 7
-        measure = measure % this.ticksPerMeasure;
-
-        // Get tickLine
-        const currentTick = this.tickLines[measure]
-
-        // Create here the note and pass it to the tick
-        laneIndexes.forEach(laneIndex => {
-            const lane = this.fretboard.lanes[laneIndex];
-            const note = new Note(currentTick.tickIndex, laneIndex, lane.x, currentTick.mesh.position.y, lane.z, this.fretboard.laneWidth/4, this.fretboard.laneWidth, this.fretboard.laneHeight, Fretboard.colors[laneIndex]);
-            const addedNote = currentTick.addNoteToLane(laneIndex, note);
-            if (addedNote) {
-                addedNotes.push(addedNote);
-            }
+    getAllNotes() {
+        return this.allNotes;
+        Object.values(this.allNotes).forEach(measureNotes => {
+            allNotes.push(...measureNotes);
         });
 
-        return addedNotes;
+        return allNotes
     }
+
+    getNotes(measure) {
+        return this.allNotes.filter(note => note.measure === measure)
+
+        if (! this.allNotes[measure])   return [];
+        return this.allNotes[measure]
+    }
+
+    // Not used
+    addNotesToScene(measure) {
+        this.allNotes[measure].forEach(note => note.addToScene(scene));
+    }
+
+    addAllNotesToScene(scene) {
+        // console.log(this.getAllNotes())
+        this.getAllNotes().forEach(note => note.addToScene(scene));
+    }
+
+    // Not used
+    hasToBeVisible(note) {
+        // has to be visible by checking its measure and tick
+        const currentTotalTick = this.currentMeasureCounter*this.ticksPerMeasure + this.currentTickCounter
+        const noteTotalTick = note.measure*this.ticksPerMeasure + note.tick
+
+        return noteTotalTick < (currentTotalTick+this.ticksPerMeasure)
+    }
+
+    // Not used
+    addNextNotesToScene(scene) {
+        // allNotes are ordered based on measure, break when you found some nodes having a bigger measure
+
+        for (this.allNotesIndex in this.allNotes) {
+            const note = this.allNotes[this.allNotesIndex];
+            if (this.hasToBeVisible(note)) {
+                note.addToScene(scene);
+                this.tickLines[note.tick].addNote(note);
+            } else {
+                break;
+            }
+        }
+
+        this.allNotes.forEach(note => {
+            note.addToScene(scene);
+        });
+    }
+
+    // addNoteToLanes(tick, isSpecial, ...laneIndexes) {
+    //     const addedNotes = [];
+
+    //     // Get tickLine
+    //     const currentTick = this.tickLines[tick]
+
+    //     // Create here the note and pass it to the tick
+    //     laneIndexes.forEach(laneIndex => {
+    //         const lane = this.fretboard.lanes[laneIndex];
+    //         const note = new Note(currentTick.tickIndex, laneIndex, lane.x, currentTick.mesh.position.y, lane.z, this.fretboard.laneWidth/4, this.fretboard.laneWidth, this.fretboard.laneHeight, Fretboard.colors[laneIndex], isSpecial);
+    //         const addedNote = currentTick.addNote(note);
+    //         if (addedNote) {
+    //             addedNotes.push(addedNote);
+    //         }
+    //     });
+        
+    //     return addedNotes;
+    // }
 
     getCurrentNotes() {
         if (! this.currentTick) return []
@@ -203,27 +296,64 @@ export default class NoteManager {
         return this.currentTick.getNotesLaneIndices();
     }
 
+    updateVisibleNotes() {
+        const start = this.totalTickCounter+this.ticksPerMeasure
+        const end = start + this.totalTicks;
+        // console.log("finding notes from ", start, " to ", end)
+        for (; this.allNotesIndex < this.allNotes.length; this.allNotesIndex++) {
+            // console.log(this.allNotesIndex)
+            const note = this.allNotes[this.allNotesIndex];
+            const noteTotalTick = this.getTotalTickCounter(note.measure, note.tick);
+            // console.log(noteTotalTick)
+            if (noteTotalTick >= start && noteTotalTick < end) {
+                // console.log(noteTotalTick, noteTotalTick % this.totalTicks)
+                const where_to_add = noteTotalTick % this.totalTicks
+                this.tickLines[where_to_add].addNote(note);
+            } else {
+                // console.log("finished")
+                break
+            }
+        }
+    }
+
     // -------------------------------------------------------------------------------------------------------------------
 
-    update(scoreManager, audioManager, fps) {
+    update(scoreManager, audioManager, fps, scene) {
+        // console.log(this.currentMeasureCounter);
+        // console.log(this.currentTickCounter);
+        // console.log(this.totalTickCounter)
         // console.log(this.currentTick);
 
         this.tickSpeed = this.speed/fps;
-        
+        // console.log(this.tickSpeed)
+
         // Update tick lines
         this.tickLines.forEach(tl => {
+            const wasColliding = tl.collided;
             tl.update(this.tickSpeed, scoreManager, audioManager);
-        });
-        
-        // Check if one of them has collided
-        // TODO: Handle miss somewhere
-        const currentTicks = this.tickLines.filter((tl) => tl.collided)
-        // console.log(currentTicks)
 
-        if (currentTicks.length > 0) {
-            this.currentTick = currentTicks[0];
-        } else {
-            this.currentTick = null;
-        }
+            // console.log("here")
+            if (!wasColliding && tl.collided) {
+                this.updateVisibleNotes();
+
+                this.totalTickCounter++;
+                this.currentTickCounter++;
+                // this.currentTickCounter = this.totalTickCounter % this.totalTicks;
+                
+                if (this.currentTickCounter === this.ticksPerMeasure) {
+                    this.currentTickCounter = 0;
+                    this.currentMeasureCounter++;
+                }
+
+                this.currentTick = this.tickLines[this.currentTickCounter];
+
+                // if (Object.keys(tl.notes).length !== 0) {
+                //     console.log(tl.tickIndex + ") - " + tl.tickType + " - PosY: " + tl.mesh.position.y);
+                //     console.log(tl.notes)
+                // }
+            } else {
+                this.currentTick = null;
+            }
+        });
     }
 }

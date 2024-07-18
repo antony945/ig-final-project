@@ -20,14 +20,14 @@ export default class Tick {
     // }
     static lowerVolumeAmout = 0.7;
     
-    constructor(tickIndex, ticksPerMeasure, tickSpace, fretboardWidth, fretboardHeight, pickupOffset, pickupHeight) {
+    constructor(tickIndex, ticksPerMeasure, tickSpace, totalTicks, fretboardWidth, fretboardHeight, pickupOffset, pickupHeight) {
         this.tickIndex = tickIndex;
         this.ticksPerMeasure = ticksPerMeasure;
         this.tickType = this.getTickType(this.tickIndex);
+        this.totalTicks = totalTicks;
 
         this.tickSpace = tickSpace;
-
-        this.spaceReset = this.tickSpace*this.ticksPerMeasure;
+        this.spaceReset = this.tickSpace*this.totalTicks;
     
         this.x_min = -fretboardWidth / 2;
         this.x_max = +fretboardWidth / 2;
@@ -48,8 +48,7 @@ export default class Tick {
         
         // console.log(tickIndex, this.y_start, this.y_min, this.y_max)
         this.createTickLine(this.tickIndex);
-        console.log(this.tickIndex + ") - " + this.tickType + " - PosY: " + this.mesh.position.y);
-    
+        // will store notes using measure as key
         this.notes = {}
         this.collided = false;
         this.hitted = false;
@@ -79,11 +78,11 @@ export default class Tick {
         // const yPos = -this.laneHeight / 2 + tickIndex * this.tickSpace;
     }
 
-    addNoteToLane(laneIndex, note) {
+    addNote(note) {
         // Only one note for laneIndex at time
-        if (this.notes[laneIndex]) return null;
+        if (this.notes[note.laneIndex]) return null;
 
-        this.notes[laneIndex] = note;
+        this.notes[note.laneIndex] = note;
         return note;
     }
 
@@ -103,15 +102,21 @@ export default class Tick {
         this.collided = false;
         this.hitted = false;
         this.accuracy = 0.0;
+
+        // TODO: Hide or remove from scene
+        this.hideNotes();
+        this.notes = {};
     }
 
     addToScene(scene) {
+        this.mesh.visible = false;
         scene.add(this.mesh);
     }
 
     checkCollision() {
         // Check collision only if it has notes, otherwise skip
-        if (Object.keys(this.notes).length == 0) return false;
+        // TODO: Think if it's needed or not
+        // if (Object.keys(this.notes).length == 0) return false;
 
         // TODO: To better implement it
         // return (this.mesh.position.y < this.y_start_hit) && (this.mesh.position.y > this.y_end_hit);        
@@ -125,7 +130,7 @@ export default class Tick {
         console.log("NOTES IN " + this.getNotesLaneIndices() + " WERE HIT WITH ACCURACY OF " + this.accuracy.toFixed(7)+"%")
     }
 
-    handleHit(scoreManager, audioManager) {
+    handleHit(scoreManager, audioManager, scene) {
         // Update score
         scoreManager.handleHit(this.getNotes());
 
@@ -145,11 +150,11 @@ export default class Tick {
             note.mesh.hitted = this.mesh.hitted;
 
             // Remove notes from the scene
-            // note.removeFromScene()
+            note.removeFromScene(scene)
         });
 
         // Remove note from current line
-        // delete this.notes;
+        this.notes = {};
     }
 
     static handleMiss(scoreManager, audioManager) {
@@ -162,16 +167,24 @@ export default class Tick {
         }
     }
 
+    hideNotes() {
+        Object.values(this.notes).forEach(note => {
+            note.mesh.visible = false;
+        });
+    }
+
+    showNotes() {
+        Object.values(this.notes).forEach(note => {
+            note.mesh.visible = true;
+        });
+    }
+
     update(speed, scoreManager, audioManager) {
         // Don't make line visible if over fretboard
         this.mesh.visible = this.mesh.position.y < this.y_max && this.mesh.position.y > this.y_min;
 
         // Update line position
         this.mesh.position.y -= speed;
-        if (this.mesh.position.y < this.y_min) {
-            // Line has reached the bottom of the lane
-            this.reset();
-        }
         
         if (this.checkCollision()) {
             this.collided = true;
@@ -204,6 +217,11 @@ export default class Tick {
             note.accuracy = this.accuracy;
             note.collided = this.collided;
             note.mesh.position.y = this.mesh.position.y;
-        });        
+        });
+
+        if (this.mesh.position.y < this.y_min) {
+            // Line has reached the bottom of the lane
+            this.reset();
+        }
     }
 }

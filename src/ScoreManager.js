@@ -81,7 +81,7 @@ export default class ScoreManager {
     // TODO: Think if implement accuracy or not
     handleHit(hittedNotes) {
         // We have list of hitted notes, for each of them
-        const isSomeNoteStar = hittedNotes.some(n => n.isStarNote);
+        const isSomeNoteStar = hittedNotes.some(n => n.isSpecial);
         if (isSomeNoteStar && !this.loadingStarPower) { // First note of loading star power phase
             this.loadingStarPower = true;
         } else if (! isSomeNoteStar && this.loadingStarPower) { // First note after loading star power phase => enter star power phase

@@ -4,7 +4,7 @@ import * as Utils from './utils.js'; // Adjust the path as necessary
 
 export default class Fretboard {
     static fretboardZ = -0.01;
-    static laneZ = 0.00;
+    static laneZ = 0.1;
     static pickupZ = 0.00;
     static pressEffectHeight = 0.25;
     static colors = {
@@ -116,7 +116,6 @@ export default class Fretboard {
             this.pickupWidth,
             this.holeRadius,
             this.holeDistance,
-            this.numLanes,
             0.2,    // opacity
             0.0     // relative z position
         );
@@ -125,8 +124,9 @@ export default class Fretboard {
         this.pressEffects = this.createPressEffects(
             this.holeRadius,
             Fretboard.pressEffectHeight,
-            8,      
-            0.3     // opacity
+            8,
+            0.3,     // opacity
+            0.0
         );
 
         // Combine all together
@@ -138,6 +138,7 @@ export default class Fretboard {
         // Adjust position at the bottom of the fretboard
         this.pickupY = -(laneHeight / 2) + pickupOffset;
         this.pickupMesh.position.y = this.pickupY;
+        this.pickupMesh.position.z = Fretboard.pickupZ;
         
         // Add the pickup area to the fretboard mesh
         this.mesh.add(this.pickupMesh);
@@ -149,7 +150,7 @@ export default class Fretboard {
         const geometry = new THREE.PlaneGeometry(pickupWidth, pickupHeight);
 
         // Create material for the pickup area (transparent)
-        const material = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: opacity });
+        const material = new THREE.MeshPhysicalMaterial({ color: color, transparent: true, opacity: opacity });
     
         // Create mesh for the pickup area
         const pickupAreaMesh = new THREE.Mesh(geometry, material);
