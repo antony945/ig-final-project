@@ -7,7 +7,8 @@ export default class InputManager {
             'D': 2,
             'F': 3,
             'G': 4,
-            'J': 'strum'
+            'J': 'strum',
+            'K': 'strum'
         };
 
         this.keysPressed = {};

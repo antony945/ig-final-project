@@ -191,8 +191,6 @@ export default class Tick {
             this.accuracy = 0.0;
         }
 
-
-
         // Update notes following tick line movement on y axis
         
         // Hit all the notes but make them unvisible
