@@ -348,10 +348,10 @@ export default class GameManager {
         
         // Check if we are pressing ALL AND ONLY the lanes of the currentNotes        
         const correctPress = Utils.EqualsSets(currentNotesLaneIndices, pressedLanesIndices);
-        // console.log(currentNotes);
-        // console.log(currentNotesLaneIndices);
-        // console.log(pressedLanesIndices);
-        // console.log(correctPress)
+        console.log(currentNotes);
+        console.log(currentNotesLaneIndices);
+        console.log(pressedLanesIndices);
+        console.log(correctPress)
        
         if (currentNotes.length > 0 && correctPress) { // CORRECT HIT
             const currentTick = this.noteManager.currentTick;

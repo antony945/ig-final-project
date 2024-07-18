@@ -285,6 +285,7 @@ export default class NoteManager {
     // }
 
     getCurrentNotes() {
+        console.log(this.currentTick)
         if (! this.currentTick) return []
 
         return this.currentTick.getNotes();
@@ -327,33 +328,41 @@ export default class NoteManager {
         this.tickSpeed = this.speed/fps;
         // console.log(this.tickSpeed)
 
+        // Initialize current tick
+        this.currentTick = null;
+
         // Update tick lines
         this.tickLines.forEach(tl => {
             const wasColliding = tl.collided;
             tl.update(this.tickSpeed, scoreManager, audioManager);
 
             // console.log("here")
-            if (!wasColliding && tl.collided) {
-                this.updateVisibleNotes();
+            if (tl.collided) {
+                this.currentTick = tl;
 
-                this.totalTickCounter++;
-                this.currentTickCounter++;
-                // this.currentTickCounter = this.totalTickCounter % this.totalTicks;
-                
-                if (this.currentTickCounter === this.ticksPerMeasure) {
-                    this.currentTickCounter = 0;
-                    this.currentMeasureCounter++;
+                if (!wasColliding) {
+                    this.updateVisibleNotes();
+
+                    this.totalTickCounter++;
+                    this.currentTickCounter++;
+                    // this.currentTickCounter = this.totalTickCounter % this.totalTicks;
+                    
+                    if (this.currentTickCounter === this.ticksPerMeasure) {
+                        this.currentTickCounter = 0;
+                        this.currentMeasureCounter++;
+                    }
+    
+                    this.currentTick = this.tickLines[this.currentTickCounter];
+                    this.currentTick = tl;
+    
+                    // if (Object.keys(tl.notes).length !== 0) {
+                    //     console.log(tl.tickIndex + ") - " + tl.tickType + " - PosY: " + tl.mesh.position.y);
+                    //     console.log(tl.notes)
+                    // }
                 }
-
-                this.currentTick = this.tickLines[this.currentTickCounter];
-
-                // if (Object.keys(tl.notes).length !== 0) {
-                //     console.log(tl.tickIndex + ") - " + tl.tickType + " - PosY: " + tl.mesh.position.y);
-                //     console.log(tl.notes)
-                // }
-            } else {
-                this.currentTick = null;
             }
         });
+
+        // console.log(this.currentTick)
     }
 }
