@@ -33,10 +33,10 @@ export default class Note {
 
         if (! starPowerActive) {
             // Normal circular noteù
-            this.mesh = this.createMesh(32, mainMaterial, sideMaterial);
+            this.mesh = this.createMesh(32, mainMaterial, sideMaterial, isSpecial);
         } else {
             // Special octagonal note
-            this.mesh = this.createMesh(8, mainMaterialSpecial, sideMaterial);
+            this.mesh = this.createMesh(8, mainMaterialSpecial, sideMaterial, isSpecial);
         }
 
         // this.mesh.castShadow = true; // Ensure the note casts shadows
@@ -50,33 +50,27 @@ export default class Note {
         this.isSpecial = isSpecial;
     }
 
-    createMesh(numSides, mainMaterial, sideMaterial) {
+    createMesh(numSides, mainMaterial, sideMaterial, isSpecial) {
         const bottomRadius = .95*this.noteRadius;
         const topRadius = .5*this.noteRadius;  
-        const topTopRadius = .3*this.noteRadius;
-        const smallHeight = .1*this.noteRadius;
-        const bigHeight = .4*this.noteRadius;
+        // const topTopRadius = .3*this.noteRadius;
+        const bottomHeight = .3*this.noteRadius;
+        const centralHeight = .4*this.noteRadius;
+        const topHeight = .15*this.noteRadius;
 
-        // Bottom - White torus
-        // const bottomGeometry = new THREE.CylinderGeometry(bottomRadius, bottomRadius, smallHeight, numSides, 1);
-        const bottomGeometry = new THREE.TorusGeometry(bottomRadius, smallHeight, 12, numSides);
-        const bottomMesh = new THREE.Mesh(bottomGeometry, sideMaterial);
-        // bottomMesh.rotation.x = Math.PI / 2;
-        // bottomMesh.rotation.y = Math.PI / 2;
-
-        // Central mesh - Colored half-cone
-        const centralGeometry = new THREE.CylinderGeometry(topRadius, bottomRadius, bigHeight, numSides, 1);
-        const centralMesh = new THREE.Mesh(centralGeometry, mainMaterial);
-        centralMesh.rotation.x = Math.PI / 2;
-        centralMesh.rotation.y = Math.PI / 2;
-        centralMesh.position.z = (bigHeight/2) + smallHeight;
+        // Bottom + Central mesh - Colored half-cone
+        // var bottomMesh, centralMesh;
         
-        // Top - White half-cone
-        const topGeometry = new THREE.CylinderGeometry(topTopRadius, topRadius, smallHeight, numSides, 1);
-        const topMesh = new THREE.Mesh(topGeometry, sideMaterial);
-        topMesh.rotation.x = Math.PI / 2;
-        topMesh.rotation.y = Math.PI / 2;
-        topMesh.position.z = bigHeight + 1.5*smallHeight;
+        var meshes; 
+        if (isSpecial) {
+            meshes = this.createStarMeshes(topRadius, bottomRadius, centralHeight, bottomHeight, topHeight, sideMaterial, mainMaterial);
+        } else {
+            meshes = this.createNormalMeshes(topRadius, bottomRadius, centralHeight, bottomHeight, topHeight, sideMaterial, mainMaterial);
+        }
+        
+        const bottomMesh = meshes.bottom
+        const centralMesh = meshes.central
+        const topMesh = meshes.top        
 
         // FINAL NOTE
         const mesh = new THREE.Object3D();
@@ -95,6 +89,136 @@ export default class Note {
         // this.mesh.position.copy(this.starting_position);
     }
 
+    createNormalMeshes(topRadius, bottomRadius, centralHeight, bottomHeight, topHeight, sideMaterial, mainMaterial) {
+        const bottomGeometry = new THREE.CylinderGeometry(bottomRadius, bottomRadius, bottomHeight, 32, 1);
+        // const bottomGeometry = new THREE.TorusGeometry(bottomRadius, smallHeight, 12, 32);
+        const bottomMesh = new THREE.Mesh(bottomGeometry, sideMaterial);
+        bottomMesh.rotation.x = Math.PI / 2;
+        bottomMesh.rotation.y = Math.PI / 2;
+        
+        const centralGeometry = new THREE.CylinderGeometry(topRadius, bottomRadius, centralHeight, 32, 1);
+        const centralMesh = new THREE.Mesh(centralGeometry, mainMaterial);
+        centralMesh.rotation.x = Math.PI / 2;
+        centralMesh.rotation.y = Math.PI / 2;
+        centralMesh.position.z = (centralHeight/2) + bottomHeight/2;
+
+        // Top - White half-cone
+        const topGeometry = new THREE.CylinderGeometry(topRadius, topRadius, topHeight, 32, 1);
+        const topMesh = new THREE.Mesh(topGeometry, sideMaterial);
+        topMesh.rotation.x = Math.PI / 2;
+        topMesh.rotation.y = Math.PI / 2;
+        topMesh.position.z = centralHeight + bottomHeight - topHeight/2;
+        return {
+            bottom: bottomMesh,
+            central: centralMesh,
+            top: topMesh
+        }
+    }
+
+    createStarMeshes(topRadius, bottomRadius, centralHeight, bottomHeight, topHeight, sideMaterial, mainMaterial) {
+        // Create the star-shaped base
+        const outerRadius = bottomRadius*2;
+        const innerRadius = bottomRadius;
+        const points = 5;
+        const verticesBottom = [];
+        const verticesCentral = [];
+    
+        // Base mesh 
+        for (let i = 0; i < points; i++) {
+            const thetaOuter = (i * 2 * Math.PI) / points;
+            const thetaInner = ((i + 0.5) * 2 * Math.PI) / points;
+            verticesBottom.push(Math.cos(thetaOuter) * outerRadius, Math.sin(thetaOuter) * outerRadius, 0-bottomHeight/2);
+            verticesBottom.push(Math.cos(thetaInner) * innerRadius, Math.sin(thetaInner) * innerRadius, 0-bottomHeight/2);
+        }
+
+        // Create intermediate vertices with no factor
+        const intermediateVertexIndex1 = verticesBottom.length / 3;
+        const intermediateFactor1 = 1.0
+        for (let i = 0; i < points; i++) {
+            const thetaOuter = (i * 2 * Math.PI) / points;
+            const thetaInner = ((i + 0.5) * 2 * Math.PI) / points;
+            verticesBottom.push(Math.cos(thetaOuter) * outerRadius * intermediateFactor1, Math.sin(thetaOuter) * outerRadius * intermediateFactor1, bottomHeight/2);
+            verticesBottom.push(Math.cos(thetaInner) * innerRadius * intermediateFactor1, Math.sin(thetaInner) * innerRadius * intermediateFactor1, bottomHeight/2);
+            
+            verticesCentral.push(Math.cos(thetaOuter) * outerRadius * intermediateFactor1, Math.sin(thetaOuter) * outerRadius * intermediateFactor1, bottomHeight/2);
+            verticesCentral.push(Math.cos(thetaInner) * innerRadius * intermediateFactor1, Math.sin(thetaInner) * innerRadius * intermediateFactor1, bottomHeight/2);
+        }
+
+        // Create intermediate vertices with factor
+        const intermediateVertexIndex2 = verticesCentral.length / 3;
+        const intermediateFactor2 = topRadius;
+        for (let i = 0; i < points; i++) {
+            const thetaOuter = (i * 2 * Math.PI) / points;
+            const thetaInner = ((i + 0.5) * 2 * Math.PI) / points;
+            verticesCentral.push(Math.cos(thetaOuter) * outerRadius * intermediateFactor2, Math.sin(thetaOuter) * outerRadius * intermediateFactor2, centralHeight+bottomHeight);
+            verticesCentral.push(Math.cos(thetaInner) * innerRadius * intermediateFactor2, Math.sin(thetaInner) * innerRadius * intermediateFactor2, centralHeight+bottomHeight);
+        }
+
+        // Create the top point of the cone
+        // const topVertexIndex = vertices.length/3;
+        // vertices.push(0, 0, 3);
+
+        // Create the indices for the faces
+        const indicesBottom = [];
+        const indicesCentral = [];
+        for (let i = 0; i < points * 2; i++) {
+            const nextIndex = (i + 1) % (points * 2);
+            indicesBottom.push(i, nextIndex, intermediateVertexIndex1 + i);
+            indicesBottom.push(nextIndex, intermediateVertexIndex1 + nextIndex, intermediateVertexIndex1 + i);
+            
+            indicesCentral.push(i, nextIndex, intermediateVertexIndex1 + i);
+            indicesCentral.push(nextIndex, intermediateVertexIndex1 + nextIndex, intermediateVertexIndex1 + i);
+
+            // indicesCentral.push(intermediateVertexIndex1 + i, intermediateVertexIndex1 + nextIndex, intermediateVertexIndex2 + i);
+            // indicesCentral.push(intermediateVertexIndex1 + nextIndex, intermediateVertexIndex2 + nextIndex, intermediateVertexIndex2 + i);
+        }
+
+        // Create the vertices and faces for the bottom
+        const bottomGeometry = new THREE.BufferGeometry();
+        // Set vertices
+        bottomGeometry.setAttribute('position',
+            new THREE.BufferAttribute(
+                new Float32Array(
+                    verticesBottom
+                ), 3
+            )
+        )
+        // Set faces
+        bottomGeometry.setIndex(indicesBottom);
+        bottomGeometry.computeVertexNormals();
+        // Create the geometry and mesh    
+        const bottomMesh = new THREE.Mesh(bottomGeometry, sideMaterial);
+        // console.log(bottomMesh);
+
+        // Create the vertices and faces for the bottom
+        const centralGeometry = new THREE.BufferGeometry();
+        // Set vertices
+        centralGeometry.setAttribute('position',
+            new THREE.BufferAttribute(
+                new Float32Array(
+                    verticesCentral
+                ), 3
+            )
+        )
+        // Set faces
+        centralGeometry.setIndex(indicesCentral);
+        centralGeometry.computeVertexNormals();
+        // Create the geometry and mesh    
+        const centralMesh = new THREE.Mesh(centralGeometry, mainMaterial);
+
+        // Top - White half-cone
+        const topGeometry = new THREE.CylinderGeometry(topRadius, topRadius, topHeight, 32, 1);
+        const topMesh = new THREE.Mesh(topGeometry, sideMaterial);
+        topMesh.rotation.x = Math.PI / 2;
+        topMesh.rotation.y = Math.PI / 2;
+        topMesh.position.z = centralHeight + bottomHeight - topHeight/2;
+        return {
+            bottom: bottomMesh,
+            central: centralMesh,
+            top: topMesh
+        }
+    }
+    
     // update() {
     //     // console.log(this.mesh.position);
     //     this.mesh.position.y -= this.speed;

@@ -11,7 +11,12 @@
       {
         "measure": 0,
         "tick": 1,
-        "lanes": [0]
+        "lanes": [0,1,2,3]
+      },
+      {
+        "measure": 0,
+        "tick": 3,
+        "lanes": [1,2,3,4]
       },
       {
         "measure": 1,

@@ -20,7 +20,7 @@ export default class NoteManager {
     static timeToReactMillisecond = 2000;
     static ticksPerBeat = 2;
     static defaultFPS = 60;
-    static introMeasures = 4
+    static introMeasures = 2
 
     constructor(fretboard, beatsPerMinute, beatsPerMeasure, notesFile, mainSong) {
         this.fretboard = fretboard;
@@ -322,7 +322,10 @@ export default class NoteManager {
         // console.log(this.totalTickCounter)
         // console.log(this.currentTick);
 
-        this.tickSpeed = this.speed/60;
+        // TODO: REMOVE
+        this.tickSpeed = 0;
+        // this.tickSpeed = this.speed/60;
+
         // console.log(this.tickSpeed)
 
         // Initialize current tick

@@ -170,9 +170,9 @@ export default class GameManager {
         );
 
         this.songProperties = this.audioManager.getSongProperties();
-        console.log(this.songProperties)
-        this.initMusicPlayer(mainSongImgFile);
-        this.updateMusicPlayer(this.songProperties);
+        // console.log(this.songProperties)
+        // this.initMusicPlayer(mainSongImgFile);
+        // this.updateMusicPlayer(this.songProperties);
     }
 
     initMusicPlayer(img) {
@@ -419,7 +419,7 @@ export default class GameManager {
     gameLoop() {
         if (this.isPaused) return; // Skip the animation frame if the game is paused
         // Will be invoked again from resumeGame() function
-        
+
         this.thisLoop = new Date();
         this.stats.begin(); // Begin measuring FPS
 
@@ -427,7 +427,8 @@ export default class GameManager {
         const pressedLanesIndices = this.inputManager.getPressedLanes();
         
         // console.log(this.fps)
-        this.noteManager.update(this.scoreManager, this.audioManager, this.fps, this.scene); // Update ticks and notes position and handles miss without strumming
+
+        this.noteManager.update(this.scoreManager, this.audioManager, this.fps, this.scene); // Update ticks and notes position and handles miss without strumming   
         this.fretboard.update(pressedLanesIndices, this.noteManager.tickSpeed); // Update fretboard texture and press effects
         
         this.cameraShake.update(this.camera);
@@ -445,7 +446,15 @@ export default class GameManager {
 
     // Starts the game and runs gameLoop
     startGame() {
-        this.audioManager.startAudioSequence();   
+        this.audioManager.startAudioSequence();
+        const notes = []
+        notes.push(...this.noteManager.createNotes(0,4,false,1,2))
+        notes.push(...this.noteManager.createNotes(0,3,true,1,2))
+
+        notes.forEach(note => {
+            note.addToScene(this.scene);
+            note.mesh.visible = true
+        })
         this.startGameLoop();
     }
 
