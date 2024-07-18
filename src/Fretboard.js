@@ -4,9 +4,9 @@ import * as Utils from './utils.js'; // Adjust the path as necessary
 
 export default class Fretboard {
     static fretboardZ = -0.01;
-    static pickupAreaZ = 0.0;
-    static pickupHolesZ = 0.0;
-    static pressEffectsHeight = 0.25;
+    static laneZ = 0.00;
+    static pickupZ = 0.00;
+    static pressEffectHeight = 0.25;
     static colors = {
         0: 0x00ff00,
         1: 0xff0000,
@@ -15,42 +15,36 @@ export default class Fretboard {
         4: 0xffa500
     }; // Green, Red, Yellow, Blue, Orange
 
-    constructor(width, height, numLanes, texturePath) {
-        this.width = width;
-        this.height = height;
+    constructor(fretboardWidth, fretboardHeight, texturePath, numLanes) {
+        this.fretboardWidth = fretboardWidth;
+        this.fretboardHeight = fretboardHeight;
+        this.texturePath = texturePath;
+        this.numLanes = numLanes;
+        this.notesLaneIndexes = {}; // TODO: What's this?
 
+        this.pickupHeight = 0.8; // Height of pickup
+        this.pickupOffset = 0.5; // Offset of pickup
+        
+        // Create fretboard
+        this.createFretboard(this.fretboardWidth, this.fretboardHeight, this.texturePath);      
+        
+        // Create lanes
+        this.createLanes(this.fretboardWidth, this.fretboardHeight, this.pickupHeight, this.pickupOffset);
+
+        // Create pickup area
+        this.createPickup(this.pickupHeight, this.pickupOffset, this.laneWidth, this.laneHeight);
+    }
+
+    createFretboard(fretboardWidth, fretboardHeight, texturePath) {
         // Apply texture
         this.textureLoader = new THREE.TextureLoader();
-
-        // // load a resource
-        // this.textureLoader.load(
-        //     // resource URL
-        //     texturePath,
-
-        //     // onLoad callback
-        //     function ( texture ) {
-        //         // in this example we create the material when the texture is loaded
-        //         this.material = new THREE.MeshBasicMaterial( {
-        //             map: texture
-        //         } );
-        //     },
-
-        //     // onProgress callback currently not supported
-        //     undefined,
-
-        //     // onError callback
-        //     function ( err ) {
-        //         console.error( 'An error happened.', err );
-        //     }
-        // );
         this.texture = this.textureLoader.load(texturePath);
         this.texture.wrapS = THREE.RepeatWrapping;
         // this.texture.wrapT = THREE.RepeatWrapping;
         // this.texture.repeat.set(1, this.height);
 
-
-        // Create mesh
-        this.geometry = new THREE.PlaneGeometry(this.width, this.height);
+        // Create main plane
+        this.geometry = new THREE.PlaneGeometry(fretboardWidth, fretboardHeight);
         this.material = new THREE.MeshPhysicalMaterial(
             {
                 map: this.texture,
@@ -82,62 +76,58 @@ export default class Fretboard {
 
         // Position the border correctly
         this.borderMesh.scale.copy(this.fretboardMesh.scale);
-        
-        
-        this.pickupHeight = 0.8; // Height of pickup area
-        this.pickupOffset = 0.5;
+
+        // Move the fretboard back so the notes can be in front of it
         this.mesh.position.y = 0;
-        this.mesh.position.z = Fretboard.fretboardZ; // Move the fretboard back so the notes can be in front of it
+        this.mesh.position.z = Fretboard.fretboardZ;
         // border.position.copy(fretboardMesh.position);
-        
-        // Create lanes
-        this.numLanes = numLanes;
-        this.createLanes(this.numLanes);
-
-        // Create pickup area
-        this.createPickup(this.numLanes, this.laneWidth, this.laneHeight);
-
-        // TODO: Change name, or move to Lane
-        this.isLanePressed = Array(5).fill(false);
-        this.notesLaneIndexes = {};
-        // TODO: Will store the most recent measure by identifying when the measure line collide with the pickup area
-        // For now set to -1
-        // this.currentNotes = []; // updated in the update method while checking for note collision in lane
     }
 
-    rotate(x_angle) {
-        this.mesh.rotation.x = x_angle;
-        this.lanes.forEach(lane => {
-            lane.mesh.rotation.x = x_angle;            
-        });
-    }
-
-    createLanes(numLanes) {
-        this.laneWidth = this.width / numLanes; // Width of each lane
-        this.laneHeight = this.height;
+    createLanes(fretboardWidth, fretboardHeight, pickupHeight, pickupOffset) {
+        this.laneWidth = fretboardWidth / this.numLanes; // Width of each lane
+        this.laneHeight = fretboardHeight;
 
         // Create lanes
         this.lanes = [];
-        for (let i = 0; i < numLanes; i++) {
-            const lane = new Lane(i, this.laneWidth, this.laneHeight, this.width, this.pickupHeight, this.pickupOffset, Fretboard.colors);
+        for (let i = 0; i < this.numLanes; i++) {
+            const lane = new Lane(i, this.laneWidth, this.laneHeight, Fretboard.laneZ, fretboardWidth, pickupHeight, pickupOffset, Fretboard.colors);
+            
             // TODO: Think if it is better to attach Lanes to Fretboard or not
-            // this.mesh.add(lane.mesh);
+            this.mesh.add(lane.mesh);
             this.lanes.push(lane);
         }
     }
 
-    createPickup(numLanes, laneWidth, laneHeight) {
+    createPickup(pickupHeight, pickupOffset, laneWidth, laneHeight) {
         // Pickup area
-        this.pickupWidth = numLanes * laneWidth; // Width of pickup area
-        this.pickupAreaMesh = this.createPickupArea(this.pickupWidth, this.pickupHeight)
+        this.pickupWidth = this.numLanes * laneWidth; // Width of pickup area
+        this.pickupAreaMesh = this.createPickupArea(
+            this.pickupWidth,
+            pickupHeight,
+            0xffffff, // color
+            0.2, // opacity
+            0.0 // relative z position
+        );
 
         // Pickup holes
         this.holeRadius = laneWidth / 4; // Radius of holes for notes
         this.holeDistance = laneWidth; // Distance between holes (aligned with lanes)
-        this.holeMeshes = this.createPickupHoles(numLanes, this.holeRadius);
+        this.holeMeshes = this.createPickupHoles(
+            this.pickupWidth,
+            this.holeRadius,
+            this.holeDistance,
+            this.numLanes,
+            0.2,    // opacity
+            0.0     // relative z position
+        );
     
         // Press effects
-        this.pressEffects = this.createLanePressEffects();
+        this.pressEffects = this.createPressEffects(
+            this.holeRadius,
+            Fretboard.pressEffectHeight,
+            8,      
+            0.3     // opacity
+        );
 
         // Combine all together
         this.pickupMesh = new THREE.Object3D();
@@ -146,72 +136,68 @@ export default class Fretboard {
         this.pickupMesh.add(...this.pressEffects);
         
         // Adjust position at the bottom of the fretboard
-        this.pickupY = -(laneHeight / 2) + this.pickupOffset;
-        this.pickupMesh.position.set(
-            0,
-            this.pickupY,
-            0.0
-        );
+        this.pickupY = -(laneHeight / 2) + pickupOffset;
+        this.pickupMesh.position.y = this.pickupY;
         
         // Add the pickup area to the fretboard mesh
         this.mesh.add(this.pickupMesh);
     }
 
-    createPickupArea(pickupWidth, pickupHeight) {
+    // TODO: Recreate it in a better way
+    createPickupArea(pickupWidth, pickupHeight, color, opacity, relativeZ) {
         // Create a plane geometry for the pickup area
         const geometry = new THREE.PlaneGeometry(pickupWidth, pickupHeight);
 
         // Create material for the pickup area (transparent)
-        const material = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.2 });
+        const material = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: opacity });
     
         // Create mesh for the pickup area
         const pickupAreaMesh = new THREE.Mesh(geometry, material);
+        pickupAreaMesh.position.z = relativeZ;
+
+        // Don't make it visible
         pickupAreaMesh.visible = false;
         return pickupAreaMesh;
     }
 
-    createPickupHoles(numLanes, holeRadius) {
+    // TODO: Recreate them in a better way
+    createPickupHoles(pickupWidth, holeRadius, holeDistance, opacity, relativeZ) {
         // const holeGeometry = new THREE.SphereGeometry(this.holeRadius, 16, 16, -Math.PI, Math.PI);
         // const holeGeometry = new THREE.RingGeometry(0.1, this.holeRadius, 8);
         const holeGeometry = new THREE.TorusGeometry(holeRadius, 0.05, 8, 8 );
 
         const holeMeshes = [];
-        for (let i = 0; i < numLanes; i++) {
+        for (let i = 0; i < this.numLanes; i++) {
             const holeMaterial = new THREE.MeshStandardMaterial({
                 color: Fretboard.colors[i],
                 transparent: true,
-                opacity: 0.5,
+                opacity: opacity,
                 side: THREE.DoubleSide,
                 wireframe: false
             });
             const holeMesh = new THREE.Mesh(holeGeometry, holeMaterial);
             
             // Adjust hole position based on lane
-            holeMesh.position.set(
-                -(this.pickupWidth / 2) + (i + 0.5) * this.holeDistance,
-                0,
-                Fretboard.pickupHolesZ
-            );
+            holeMesh.position.x = -(pickupWidth / 2) + (i + 0.5) * holeDistance;
+            holeMesh.position.z = relativeZ;
             
-            // Add hole mesh to the pickup area mesh
-            // this.pickupMesh.add(holeMesh);
             // Store hole meshes
             holeMeshes.push(holeMesh);
         }
         return holeMeshes;
     }
 
-    createLanePressEffects() {
+    // TODO: Check them
+    createPressEffects(holeRadius, pressEffectHeight, radialSegments, opacity) {
         const pressEffects = [];
 
         for (let i = 0; i < this.numLanes; i++) {
-            const geometry = new THREE.CylinderGeometry(this.holeRadius, this.holeRadius, Fretboard.pressEffectsHeight, 8);
-            
-            const material = new THREE.MeshBasicMaterial({ color: Fretboard.colors[i], transparent: true, opacity: 0.3 });
+            const geometry = new THREE.CylinderGeometry(holeRadius, holeRadius, pressEffectHeight, radialSegments);
+            const material = new THREE.MeshBasicMaterial({ color: Fretboard.colors[i], transparent: true, opacity: opacity });
             const cylinderMesh = new THREE.Mesh(geometry, material);
             cylinderMesh.rotation.x = Math.PI / 2;
             cylinderMesh.position.copy(this.holeMeshes[i].position);
-            cylinderMesh.position.z += Fretboard.pressEffectsHeight/2;
+            cylinderMesh.position.z += pressEffectHeight/2;
             
             pressEffects.push(cylinderMesh);
 
@@ -222,43 +208,49 @@ export default class Fretboard {
         return pressEffects;
     }
 
-    addToScene(scene) {
-        scene.add(this.mesh);
-        // TODO: Comment this line if you decide to have Lanes as childrens of Fretboard
-        this.lanes.forEach(lane => lane.addToScene(scene));
-    }
-
-    enableLanePressEffect(laneIndex) {
+    enablePressEffect(laneIndex) {
         // Right now just put visibility to true
-        const pressEffect = this.pressEffects[laneIndex];
-        pressEffect.visible = true;
-        return
+        this.pressEffects[laneIndex].visible = true;
     }
 
-    disableLanePressEffect(laneIndex) {
+    disablePressEffect(laneIndex) {
         // Return visibility to false
         this.pressEffects[laneIndex].visible = false;
     }
 
-    enableNoteHitEffect(laneIndex, hittedLine) {
-        console.log("NOTE IN " + laneIndex + " WAS HIT WITH ACCURACY OF "+parseFloat(hittedLine.accuracy).toFixed(2)+"%")
+    // -------------------------------------------------------------------------------------------------------------------------
+
+    addToScene(scene) {
+        scene.add(this.mesh);
+        // TODO: Comment this line if you decide to have Lanes as childrens of Fretboard
+        // this.lanes.forEach(lane => lane.addToScene(scene));
     }
 
-    update(speed) {
+    updatePressAnimations(pressedLanesIndices) {
+        // Activate press lane effects
+        this.lanes.forEach(lane => {
+            const laneIndex = lane.laneIndex;
+
+            // True if user now is pressing that laneIndex
+            const isPressed = pressedLanesIndices.includes(laneIndex);
+            
+            if (isPressed && !lane.isCurrentlyPressed) { // User has not started pressing
+                this.enablePressEffect(laneIndex);
+            } else if (!isPressed && lane.isCurrentlyPressed) { // User has now stopped pressing
+                this.disablePressEffect(laneIndex);
+            }
+
+            lane.isCurrentlyPressed = isPressed;
+        });
+    }
+
+    updateTextureScroll(speed) {
         // Update the texture offset
         this.texture.offset.y += (speed);
     }
 
-    // update() {
-    //     // if (isPaused) return;
-
-    //     // Reset currentNotes
-    //     this.currentNotes = [];
-    //     this.lanes.forEach((lane, index) => {
-    //         const collidingNote = lane.update(this.holeMeshes[index]);
-    //         if (collidingNote) {
-    //             this.currentNotes.push(collidingNote);
-    //         }
-    //     });
-    // }
+    update(pressedLanesIndices, speed) {
+        this.updatePressAnimations(pressedLanesIndices);
+        this.updateTextureScroll(speed);
+    }
 }

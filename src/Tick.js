@@ -18,6 +18,7 @@ export default class Tick {
     //     'beat': 0xFF0000,
     //     'measure': 0x0000FF
     // }
+    static lowerVolumeAmout = 0.7;
     
     constructor(tickIndex, ticksPerMeasure, tickSpace, fretboardWidth, fretboardHeight, pickupOffset, pickupHeight) {
         this.tickIndex = tickIndex;
@@ -47,10 +48,11 @@ export default class Tick {
         
         // console.log(tickIndex, this.y_start, this.y_min, this.y_max)
         this.createTickLine(this.tickIndex);
-        console.log(this.tickIndex + ") - " + this.tickType + " - " + this.mesh.position.y);
+        console.log(this.tickIndex + ") - " + this.tickType + " - PosY: " + this.mesh.position.y);
     
         this.notes = {}
         this.collided = false;
+        this.hitted = false;
     }
 
     getTickType(tickIndex) {
@@ -85,39 +87,26 @@ export default class Tick {
         return note;
     }
 
-    addToScene(scene) {
-        scene.add(this.mesh);
+    getNotes() {
+        return Object.values(this.notes);
     }
 
-    update(speed) {
-        // Update tick lines
-        this.mesh.visible = this.mesh.position.y < this.y_max;
+    getNotesLaneIndices() {
+        return Object.keys(this.notes).map(Number);
+    }
 
-        this.mesh.position.y -= speed;
-        if (this.mesh.position.y < this.y_min) {
-            // Line has reached the bottom of the lane
-            this.mesh.visible = false;
-            this.reset();
-        }
+    reset() {
+        // Put it back on top
+        // this.mesh.position.copy(this.max_position);
+        this.mesh.visible = false;
+        this.mesh.position.y += this.spaceReset;
+        this.collided = false;
+        this.hitted = false;
+        this.accuracy = 0.0;
+    }
 
-        // Check collision and set collided to True
-        if (this.checkCollision()) {
-            this.collided = true;
-            // Accuracy is higher when note is closer to the center of the pickup
-            const distance = Math.abs(this.mesh.position.y - this.y_perfect_hit);
-            const maxDistance = Math.abs(this.y_end_hit - this.y_start_hit) / 2;
-            this.accuracy = Math.max(0, 1 - (distance / maxDistance));
-        } else {
-            this.collided = false;
-            this.accuracy = 0.0;
-        }
-
-        // Update notes
-        Object.values(this.notes).forEach(note => {
-            // Follow tick line movement on y axis
-            note.mesh.visible = this.mesh.visible;
-            note.mesh.position.y = this.mesh.position.y;
-        });
+    addToScene(scene) {
+        scene.add(this.mesh);
     }
 
     checkCollision() {
@@ -125,15 +114,98 @@ export default class Tick {
         if (Object.keys(this.notes).length == 0) return false;
 
         // TODO: To better implement it
-        // console.log(this.y_start_hit + " --- " + this.mesh.position.y + " --- " + this.y_end_hit )
-        return (this.mesh.position.y < this.y_start_hit) && (this.mesh.position.y > this.y_end_hit);        
+        // return (this.mesh.position.y < this.y_start_hit) && (this.mesh.position.y > this.y_end_hit);        
+        const b = (this.mesh.position.y < this.y_start_hit) && (this.mesh.position.y > this.y_end_hit);        
+        // console.log(this.tickIndex + ") " + b + " | " + this.collided + " | " + this.y_start_hit + " --- " + this.mesh.position.y + " --- " + this.y_end_hit)
+        return b
     }
 
-    reset() {
-        // Put it back on top
-        // this.mesh.position.copy(this.max_position);
-        this.mesh.position.y += this.spaceReset;
-        this.collided = false;
-        this.accuracy = 0.0;
+    // TODO: Make it better
+    enableHitEffect() {
+        console.log("NOTES IN " + this.getNotesLaneIndices() + " WERE HIT WITH ACCURACY OF " + this.accuracy.toFixed(7)+"%")
+    }
+
+    handleHit(scoreManager, audioManager) {
+        // Update score
+        scoreManager.handleHit(this.getNotes());
+
+        // Revert original audio
+        if (! audioManager.isOriginalVolume) {
+            audioManager.resetMainSongVolume();
+        }
+
+        // Mark line and all notes as hitted
+        this.hitted = true;
+
+        // TODO: Use another animation with flames
+        this.enableHitEffect();
+
+        // TODO: Handle in better way
+        Object.values(this.notes).forEach(note => {
+            note.mesh.hitted = this.mesh.hitted;
+
+            // Remove notes from the scene
+            // note.removeFromScene()
+        });
+
+        // Remove note from current line
+        // delete this.notes;
+    }
+
+    static handleMiss(scoreManager, audioManager) {
+        // Update score
+        scoreManager.handleMiss();
+
+        // If not already lowered, lower the volume of the main song by 10%
+        if (audioManager.isOriginalVolume) {
+            audioManager.lowerMainSongVolume(Tick.lowerVolumeAmout);
+        }
+    }
+
+    update(speed, scoreManager, audioManager) {
+        // Don't make line visible if over fretboard
+        this.mesh.visible = this.mesh.position.y < this.y_max && this.mesh.position.y > this.y_min;
+
+        // Update line position
+        this.mesh.position.y -= speed;
+        if (this.mesh.position.y < this.y_min) {
+            // Line has reached the bottom of the lane
+            this.reset();
+        }
+        
+        if (this.checkCollision()) {
+            this.collided = true;
+
+            // Accuracy is higher when note is closer to the center of the pickup
+            const distance = Math.abs(this.mesh.position.y - this.y_perfect_hit);
+            const maxDistance = Math.abs(this.y_end_hit - this.y_start_hit) / 2;
+            this.accuracy = Math.max(0, 1 - (distance / maxDistance));
+        } else {
+            // Check if it collided before and if it was not hitted => MISS
+            if (this.collided && ! this.hitted) {
+                // Let audio and score manager to handle miss
+                Tick.handleMiss(scoreManager, audioManager);
+            }
+
+            this.collided = false;
+            this.accuracy = 0.0;
+        }
+
+
+
+        // Update notes following tick line movement on y axis
+        
+        // Hit all the notes but make them unvisible
+        Object.values(this.notes).forEach(note => {
+            // if (!note.mesh.visible && this.mesh.visible) {
+            // console.log("hitted, here")
+            // note.mesh.visible = !note.hitted && note.mesh.position.y < this.y_max && note.mesh.position.y > this.y_min;
+            note.mesh.visible = this.mesh.visible && !this.hitted;
+
+            // Let the note follow
+            note.accuracy = this.accuracy;
+            note.collided = this.collided;
+            note.mesh.position.y = this.mesh.position.y;
+        });        
     }
 }

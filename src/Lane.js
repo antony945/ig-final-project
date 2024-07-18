@@ -3,36 +3,35 @@ import Note from './Note.js';
 
 export default class Lane {
     static lane_z = 0.00; // TODO: This breaks collision if 0.01
-    static colors = {
-        0: 0x00ff00,
-        1: 0xff0000,
-        2: 0xffff00,
-        3: 0x0000ff,
-        4: 0xffa500
-    }; // Green, Red, Yellow, Blue, Orange
 
-    constructor(index, laneWidth, laneHeight, fretboardWidth, pickupHeight, pickupOffset) {
-        this.index = index;
-        this.notes = {};
+    constructor(laneIndex, laneWidth, laneHeight, laneZ, fretboardWidth, pickupHeight, pickupOffset, colors) {
+        this.laneIndex = laneIndex;
         this.laneWidth = laneWidth;
         this.laneHeight = laneHeight;
-
+        this.isCurrentlyPressed = false;
+        
         this.collidingNote = null;
+        this.notes = {};
+        
+        // Points defining lane
+        this.p1 = new THREE.Vector3(0, this.laneHeight / 2, 0);
+        this.p2 = new THREE.Vector3(0, -this.laneHeight / 2 + (1.5*pickupHeight + pickupOffset), 0);
+        
+        this.x = -(fretboardWidth/2) + (this.laneWidth / 2) + this.laneIndex * this.laneWidth
+        this.z = laneZ;
+        this.radius = 0.015;
+        this.isMetallic = true;
 
-        // Starting offset of lane
-        this.x = -(fretboardWidth/2) + (this.laneWidth / 2) + this.index * this.laneWidth
-        this.pickupHeight = pickupHeight;
-        this.pickupOffset = pickupOffset;
-        this.z = Lane.lane_z;
-
-        const isMetallic = true;
-        // this.createLineLane(isMetallic);
-        this.createCylinderLane(isMetallic)
+        this.mesh = this.createCylinderLane(this.isMetallic, this.p1, this.p2, this.radius);
+        
+        this.mesh.position.x = this.x;
+        this.mesh.position.z = this.z;
     }
 
+    // Not used
     createPlaneLane() {
         this.geometry = new THREE.PlaneGeometry(this.laneWidth, this.laneHeight);
-        this.material = new THREE.MeshBasicMaterial({ color: Lane.colors[this.index], wireframe: false }); // Adjust color as needed
+        this.material = new THREE.MeshBasicMaterial({ color: Lane.colors[this.laneIndex], wireframe: false }); // Adjust color as needed
         this.mesh = new THREE.Mesh(this.geometry, this.material);
         this.mesh.position.set(
             this.x,
@@ -41,6 +40,7 @@ export default class Lane {
         )
     }
 
+    // Not used
     createLineLane(isMetallic) {
         if (isMetallic) {
             this.color = 0xaaaaaa;
@@ -73,7 +73,7 @@ export default class Lane {
         this.mesh = new THREE.Line(this.geometry, this.material);
     }
 
-    createCylinderLane(isMetallic) {
+    createCylinderLane(isMetallic, p1, p2, radius) {
         if (isMetallic) {
             this.color = 0xaaaaaa;
             this.metalness = 0.9;
@@ -91,24 +91,22 @@ export default class Lane {
             roughness: this.roughness
         });
 
-        // Top point
-        const p1 = new THREE.Vector3(this.x, this.laneHeight / 2, 0)
-        const p2 = new THREE.Vector3(this.x, -this.laneHeight / 2 + (1.5*this.pickupHeight + this.pickupOffset), 0)
-        this.geometry = new THREE.CylinderGeometry(0.015, 0.015, p1.distanceTo(p2), 32);
-        this.mesh = new THREE.Mesh(this.geometry, this.material);
-        this.mesh.position.x = this.x;
-        this.mesh.position.z = this.z;
+        this.geometry = new THREE.CylinderGeometry(radius, radius, p1.distanceTo(p2), 32);
+        return new THREE.Mesh(this.geometry, this.material);
     }
 
+    // Not used
     addToScene(scene) {
         scene.add(this.mesh);
-        Object.keys(this.notes).forEach(measure => this.notes[measure].addToScene(scene));
+        // Object.keys(this.notes).forEach(measure => this.notes[measure].addToScene(scene));
     }
 
+    // Not used
     getNote(measure) {
         return this.notes[measure];
     }
 
+    // Not used
     update(holeMesh) {  
         Object.keys(this.notes).forEach( measure => {
             const note = this.notes[measure]; 

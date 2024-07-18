@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 
 export default class Note {
-    constructor(tickIndex, laneIndex, start_x, start_y, start_z, noteRadius, laneWidth, laneHeight, color) {
+    // TODO: Support starPower parameter to change appearance during starPower
+    constructor(tickIndex, laneIndex, start_x, start_y, start_z, noteRadius, laneWidth, laneHeight, color, starPowerActive=false) {
         this.tickIndex = tickIndex;
         this.laneIndex = laneIndex;
         this.noteRadius = noteRadius;
@@ -28,21 +29,24 @@ export default class Note {
         });
         const mainMaterialSpecial = new THREE.MeshNormalMaterial();
         
-        // Normal circular note
-        this.mesh = this.createMesh(32, mainMaterial, sideMaterial);
+
+        if (! starPowerActive) {
+            // Normal circular noteù
+            this.mesh = this.createMesh(32, mainMaterial, sideMaterial);
+        } else {
+            // Special octagonal note
+            this.mesh = this.createMesh(8, mainMaterialSpecial, sideMaterial);
+        }
+
         // this.mesh.castShadow = true; // Ensure the note casts shadows
         // this.mesh.receiveShadow = true; // Ensure the note receives shadows
-
-        // Special octagonal note
-        // this.mesh = this.createMesh(8, mainMaterialSpecial, sideMaterial);
 
         // Other parameters
         this.collided = false;
         this.accuracy = 0;
-        this.hit = false;
-
+        this.hitted = false;
         // Is true if the note is part of the loading star power phase
-        this.starNote = false;
+        this.isStarNote = false;
     }
 
     createMesh(numSides, mainMaterial, sideMaterial) {

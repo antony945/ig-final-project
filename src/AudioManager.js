@@ -17,6 +17,9 @@ export default class AudioManager {
         
         this.mainSong = new THREE.Audio(this.listener);
         this.loadMainSong(mainSongPath);
+        this.isOriginalVolume = true;
+        this.currentVolume = this.mainSong.getVolume()
+        this.originalVolume = this.currentVolume;
 
         this.delayedTasks = [];
         this.activeSounds = [];
@@ -119,6 +122,27 @@ export default class AudioManager {
             this.mainSong.setBuffer(buffer);
             this.mainSong.setLoop(false);
         });
+    }
+
+    setMainSongVolume(new_volume) {
+        if (new_volume == this.currentVolume) return
+
+        this.currentVolume = new_volume;
+        this.isOriginalVolume = (this.currentVolume === this.originalVolume)
+        this.mainSong.setVolume(this.currentVolume);
+    }
+
+    lowerMainSongVolume(amount) {
+        this.setMainSongVolume(Math.max(0, this.mainSong.getVolume() - amount));
+    }
+
+    lowerMainSongVolumePercentage(percentage) {
+        const reductionAmount = this.mainSong.getVolume() * (percentage / 100);
+        this.setMainSongVolume(Math.max(0, this.mainSong.getVolume() - reductionAmount));
+    }
+
+    resetMainSongVolume() {
+        this.setMainSongVolume(this.originalVolume);
     }
 
     playMainSong() {
