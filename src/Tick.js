@@ -215,6 +215,9 @@ export default class Tick {
         
         // Hit all the notes but make them unvisible
         Object.values(this.notes).forEach(note => {
+            // Make the note rotate if it special
+            note.update()
+
             // if (!note.mesh.visible && this.mesh.visible) {
             // console.log("hitted, here")
             // note.mesh.visible = !note.hitted && note.mesh.position.y < this.y_max && note.mesh.position.y > this.y_min;

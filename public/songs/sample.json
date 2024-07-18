@@ -18,6 +18,7 @@
         "tick": 3,
         "lanes": [1,2,3,4]
       },
+      "end_loading_star_phase",
       {
         "measure": 1,
         "tick": 1,
@@ -37,8 +38,7 @@
         "measure": 4,
         "tick": 0,
         "lanes": [4]
-      },
-      "end_loading_star_phase"
+      }
     ]
   }
   

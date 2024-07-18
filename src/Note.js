@@ -22,17 +22,18 @@ export default class Note {
         // Define materials
         const mainMaterial = new THREE.MeshStandardMaterial({
             color: this.color, // Base color of the material
-            metalness: 0.8,  // Fully metallic
+            metalness: 0.6,  // metallic
             roughness: 0.4   // Slightly smooth for a reflective look
         });
         const sideMaterial = new THREE.MeshStandardMaterial({
-            color: 0xffffff
+            color: 0xffffff,
+            metalness: 0.2,
+            roughness: 0.6
         });
         const mainMaterialSpecial = new THREE.MeshNormalMaterial();
         
-
         if (! starPowerActive) {
-            // Normal circular noteù
+            // Normal circular note
             this.mesh = this.createMesh(mainMaterial, sideMaterial, isSpecial);
         } else {
             // Special octagonal note
@@ -49,6 +50,13 @@ export default class Note {
         // Is true if the note is part of the loading star power phase
         this.isSpecial = isSpecial;
     }
+
+    createEdgeMesh(geometry, color, thresholdAngle=120) {
+        const edgeGeometry = new THREE.EdgesGeometry(geometry, thresholdAngle);
+        const edgeMaterial = new THREE.LineBasicMaterial({ color: color });
+        const edgeMesh = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+        return edgeMesh;
+    };
 
     createMesh(mainMaterial, sideMaterial, isSpecial) {
         const bottomRadius = .95*this.noteRadius;
@@ -68,9 +76,18 @@ export default class Note {
             meshes = this.createNormalMeshes(topRadius, bottomRadius, centralHeight, bottomHeight, topHeight, sideMaterial, mainMaterial);
         }
         
-        const bottomMesh = meshes.bottom
-        const centralMesh = meshes.central
-        const topMesh = meshes.top        
+        const bottomMesh = meshes.bottom.mesh
+        const centralMesh = meshes.central.mesh
+        const topMesh = meshes.top.mesh
+        
+        const edgeColor = 0x000000
+        const bottomEdges = this.createEdgeMesh(meshes.bottom.geometry, edgeColor);
+        const centralEdges = this.createEdgeMesh(meshes.central.geometry, edgeColor);
+        const topEdges = this.createEdgeMesh(meshes.top.geometry, edgeColor);
+        
+        bottomMesh.add(bottomEdges);
+        centralMesh.add(centralEdges);
+        topMesh.add(topEdges);
 
         // FINAL NOTE
         const mesh = new THREE.Object3D();
@@ -111,16 +128,25 @@ export default class Note {
         topMesh.rotation.y = Math.PI / 2;
         topMesh.position.z = centralHeight + bottomHeight - topHeight;
         return {
-            bottom: bottomMesh,
-            central: centralMesh,
-            top: topMesh
+            bottom: {
+                geometry: bottomGeometry,
+                mesh: bottomMesh,
+            },
+            central: {
+                geometry: centralGeometry,
+                mesh: centralMesh,
+            },
+            top: {
+                geometry: topGeometry,
+                mesh: topMesh
+            }
         }
     }
 
     createStarMeshes(topRadius, bottomRadius, centralHeight, bottomHeight, topHeight, sideMaterial, mainMaterial) {
-        // Create the star-shaped base
-        const outerRadius = bottomRadius*2;
-        const innerRadius = bottomRadius;
+        // Create the star-shape
+        const outerRadius = bottomRadius*1.5;
+        const innerRadius = bottomRadius*0.75;
         const points = 5;
         const verticesBottom = [];
         const verticesCentral = [];
@@ -215,31 +241,35 @@ export default class Note {
         topMesh.rotation.y = Math.PI / 2;
         topMesh.position.z = centralHeight + bottomHeight - topHeight;
         return {
-            bottom: bottomMesh,
-            central: centralMesh,
-            top: topMesh
+            bottom: {
+                geometry: bottomGeometry,
+                mesh: bottomMesh,
+            },
+            central: {
+                geometry: centralGeometry,
+                mesh: centralMesh,
+            },
+            top: {
+                geometry: topGeometry,
+                mesh: topMesh
+            }
         }
     }
     
-    // update() {
-    //     // console.log(this.mesh.position);
-    //     this.mesh.position.y -= this.speed;
-        
-    //     if (this.mesh.position.y < this.min_y) {
-    //         // Note has reached the bottom of the lane
-    //         // this.mesh.visible = false;
-    //         this.reset();
-    //     }
-    // }
+    update() {
+        if (this.isSpecial) {
+            this.mesh.rotation.z += 0.03;
+        }
+    }
     
-    // reset() {
-    //     // Put it back on topgrou
-    //     this.mesh.position.copy(this.starting_position);
-    //     // Reset other parameters
-    //     this.accuracy = 0;
-    //     this.collided = false;
-    //     this.hit = false;
-    // }
+    reset() {
+        // Put it back on topgrou
+        this.mesh.position.copy(this.starting_position);
+        // Reset other parameters
+        this.accuracy = 0;
+        this.collided = false;
+        this.hit = false;
+    }
 
     addToScene(scene) {
         this.mesh.visible = false;

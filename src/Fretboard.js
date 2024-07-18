@@ -11,8 +11,8 @@ export default class Fretboard {
         0: 0x00ff00,
         1: 0xff0000,
         2: 0xffff00,
-        3: 0x0000ff,
-        4: 0xffa500
+        3: 0x0089ff,
+        4: 0xffb300
     }; // Green, Red, Yellow, Blue, Orange
 
     constructor(fretboardWidth, fretboardHeight, texturePath, numLanes) {
