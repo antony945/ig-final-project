@@ -127,10 +127,11 @@ export default class Tick {
 
     // TODO: Make it better
     enableHitEffect() {
-        console.log("NOTES IN " + this.getNotesLaneIndices() + " WERE HIT WITH ACCURACY OF " + this.accuracy.toFixed(7)+"%")
     }
 
     handleHit(scoreManager, audioManager, scene) {
+        console.log("HIT (in lane " + this.getNotesLaneIndices() + " with " + this.accuracy.toFixed(2)+"% accuracy)")
+
         // Update score
         scoreManager.handleHit(this.getNotes());
 
@@ -158,6 +159,8 @@ export default class Tick {
     }
 
     static handleMiss(scoreManager, audioManager) {
+        console.log("MISS or OVERSTRUM")
+        
         // Update score
         scoreManager.handleMiss();
 
@@ -179,6 +182,10 @@ export default class Tick {
         });
     }
 
+    hasNotes() {
+        return Object.keys(this.notes).length > 0
+    }
+
     update(speed, scoreManager, audioManager) {
         // Don't make line visible if over fretboard
         this.mesh.visible = this.mesh.position.y < this.y_max && this.mesh.position.y > this.y_min;
@@ -195,7 +202,7 @@ export default class Tick {
             this.accuracy = Math.max(0, 1 - (distance / maxDistance));
         } else {
             // Check if it collided before and if it was not hitted => MISS
-            if (this.collided && ! this.hitted) {
+            if (this.hasNotes() && this.collided && ! this.hitted) {
                 // Let audio and score manager to handle miss
                 Tick.handleMiss(scoreManager, audioManager);
             }

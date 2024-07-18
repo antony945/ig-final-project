@@ -348,10 +348,10 @@ export default class GameManager {
         
         // Check if we are pressing ALL AND ONLY the lanes of the currentNotes        
         const correctPress = Utils.EqualsSets(currentNotesLaneIndices, pressedLanesIndices);
-        console.log(currentNotes);
-        console.log(currentNotesLaneIndices);
-        console.log(pressedLanesIndices);
-        console.log(correctPress)
+        // console.log(currentNotes);
+        // console.log(currentNotesLaneIndices);
+        // console.log(pressedLanesIndices);
+        // console.log(correctPress)
        
         if (currentNotes.length > 0 && correctPress) { // CORRECT HIT
             const currentTick = this.noteManager.currentTick;
@@ -359,7 +359,6 @@ export default class GameManager {
             // Update score, re-put volume as original and generate hit effect 
             currentTick.handleHit(this.scoreManager, this.audioManager, this.scene);
         } else { // MISS or OVERSTRUM
-
             this.shakeCamera();
             Tick.handleMiss(this.scoreManager, this.audioManager);
             this.audioManager.playRandomSoundEffect('strumMiss');
