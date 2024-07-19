@@ -129,6 +129,13 @@ export default class Tick {
     enableHitEffect() {
     }
 
+    enableStarPowerNotes(scoreManager) {
+        
+
+        // Change material of all sub
+        scoreManager.starPowerNoteDuration
+    }
+
     handleHit(scoreManager, audioManager, scene) {
         console.log("HIT (in lane " + this.getNotesLaneIndices() + " with " + this.accuracy.toFixed(2)+"% accuracy)")
 
@@ -158,11 +165,11 @@ export default class Tick {
         this.notes = {};
     }
 
-    static handleMiss(scoreManager, audioManager) {
+    static handleMiss(scoreManager, audioManager, missedNotes) {
         console.log("MISS or OVERSTRUM")
         
         // Update score
-        scoreManager.handleMiss();
+        scoreManager.handleMiss(missedNotes);
 
         // If not already lowered, lower the volume of the main song by 10%
         if (audioManager.isOriginalVolume) {
@@ -186,7 +193,7 @@ export default class Tick {
         return Object.keys(this.notes).length > 0
     }
 
-    update(speed, scoreManager, audioManager) {
+    update(speed, scoreManager, audioManager, scene) {
         // Don't make line visible if over fretboard
         this.mesh.visible = this.mesh.position.y < this.y_max && this.mesh.position.y > this.y_min;
 
@@ -202,9 +209,9 @@ export default class Tick {
             this.accuracy = Math.max(0, 1 - (distance / maxDistance));
         } else {
             // Check if it collided before and if it was not hitted => MISS
-            if (this.hasNotes() && this.collided && ! this.hitted) {
+            if (this.hasNotes() && this.collided && ! this.hitted) {                
                 // Let audio and score manager to handle miss
-                Tick.handleMiss(scoreManager, audioManager);
+                Tick.handleMiss(scoreManager, audioManager, this.getNotes());
             }
 
             this.collided = false;
@@ -216,7 +223,7 @@ export default class Tick {
         // Hit all the notes but make them unvisible
         Object.values(this.notes).forEach(note => {
             // Make the note rotate if it special
-            note.update()
+            note.update(scoreManager.interruptedLoadingStarPower, scene)
 
             // if (!note.mesh.visible && this.mesh.visible) {
             // console.log("hitted, here")

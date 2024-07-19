@@ -98,6 +98,25 @@ export default class NoteManager {
         const addedNotes = [];
 
         let loadingStarPhase = false;
+        let isLastSpecial = false;
+
+        for (let i = 0; i < notes.length; i++) {
+            const item = notes[i];
+            
+            if (item === "begin_loading_star_phase") {
+                loadingStarPhase = true;
+            } else if (item === "end_loading_star_phase") {
+                loadingStarPhase = false;
+            } else {
+                const measure = item.measure;
+                // Check if next item is end_loading_star_phase
+                // console.log(notes[i+1])
+                isLastSpecial = (notes[i+1] === "end_loading_star_phase")
+
+                addedNotes.push(...this.createNotes(measure, item.tick, loadingStarPhase, isLastSpecial, ...item.lanes));
+            };
+        }
+
         notes.forEach(item => {
             if (item === "begin_loading_star_phase") {
                 loadingStarPhase = true;
@@ -186,7 +205,7 @@ export default class NoteManager {
         // console.log("speed ", this.speed2)
     }
 
-    createNotes(measure, tick, isSpecial, ...laneIndexes) {
+    createNotes(measure, tick, isSpecial, isLastSpecial, ...laneIndexes) {
         const addedNotes = [];
 
         // Get tickLine
@@ -198,7 +217,7 @@ export default class NoteManager {
 
             // Create all notes already in their position (even outside the lane)
             const noteY = currentTick.mesh.position.y + this.measureSpace * measure
-            const note = new Note(measure, currentTick.tickIndex, laneIndex, lane.x, noteY, lane.z, this.fretboard.laneWidth/4, this.fretboard.laneWidth, this.fretboard.laneHeight, Fretboard.colors[laneIndex], isSpecial);
+            const note = new Note(measure, currentTick.tickIndex, laneIndex, lane.x, noteY, lane.z, this.fretboard.laneWidth/4, this.fretboard.laneWidth, this.fretboard.laneHeight, Fretboard.colors[laneIndex], isSpecial, isLastSpecial);
             addedNotes.push(note);
         });
         
@@ -325,7 +344,6 @@ export default class NoteManager {
         this.tickSpeed = this.speed/60;
         // TODO: Comment
         // this.tickSpeed = 0;
-
         // console.log(this.tickSpeed)
 
         // Initialize current tick
@@ -334,14 +352,24 @@ export default class NoteManager {
         // Update tick lines
         this.tickLines.forEach(tl => {
             const wasColliding = tl.collided;
-            tl.update(this.tickSpeed, scoreManager, audioManager);
+            tl.update(this.tickSpeed, scoreManager, audioManager, scene);
 
-            // console.log("here")
+            // console.log("here")asj
             if (tl.collided) {
                 this.currentTick = tl;
 
                 if (!wasColliding) {
                     this.updateVisibleNotes();
+
+                    // Update scoreManager star count duration
+                    if (this.currentTick.tickType == 'measure' && scoreManager.starPower) {
+                        // console.log(scoreManager.starPowerCurrentMeasureCount)
+                        if (scoreManager.starPowerCurrentMeasureCount+1 == scoreManager.starPowerMeasureDuration) {
+                            scoreManager.deactivateStarPower();
+                        } else {
+                            scoreManager.starPowerCurrentMeasureCount++;
+                        }
+                    }
 
                     this.totalTickCounter++;
                     this.currentTickCounter++;
@@ -362,6 +390,58 @@ export default class NoteManager {
                 }
             }
         });
+
+        // this.allNotes.forEach(note => {
+        //     if (scoreManager.starPower && note.material !== note.mainMaterialStarPower) {
+        //         note.material = note.mainMaterialStarPower;
+        //     } else if (!scoreManager.starPower && note.material !== note.mainMaterial) {
+        //         note.material = note.mainMaterial;
+        //     }
+        // })
+        // // Check if star power, in that case change material
+        // if (! scoreManager.starPower) {
+        //     scene.traverse(obj => {
+        //         if(obj.isMesh && obj.material.name.includes('regular')) {
+        //            obj.material = this.mainMaterialStarPower;
+        //         }
+        //     });
+        //     this.isStarPowerMaterialOn = true;
+        // } else if (this.isStarPowerMaterialOn && !starPower) {
+            
+        //     // scene.traverse(obj => {
+        //     //     if (obj.isMesh && obj.material.name.includes('starPower')) {
+        //     //         obj.material = this.mainMaterial;
+        //     //     }
+        //     // });
+        //     this.mesh.getObjectByName('central').material = this.mainMaterial;
+        //     // console.log(this.mesh)
+        //     // this.mesh.material.color.set(this.color);
+        //     this.isStarPowerMaterialOn = false;
+        // }
+
+        // // If now we loaded star power
+        // if (!previoslyStarPower && scoreManager.starPower) {
+        //     // TODO: Change notes material to star power
+        // } else if (previoslyStarPower && ! scoreManager.starPower) {
+        //     // TODO: Change notes material to normal
+        // }
+
+        // if (previoslyLoadingStarPower && !scoreManager.loadingStarPower) {
+        //     // Even if notes are special, display them as normal
+        //     this.disableSpecialNotes = true;
+        // }
+
+        // if (this.disableSpecialNotes) {
+        //     // Update all successive notes to normal until you found the last one
+        //     console.log(this.allNotesIndex);
+        //     for (; this.allNotesIndex < this.allNotes; this.allNotesIndex++) {
+        //         // const element = arraythis;
+                
+        //     }
+
+        //     // Once you found that, stop
+        //     this.disableSpecialNotes = false;
+        // }
 
         // console.log(this.currentTick)
     }

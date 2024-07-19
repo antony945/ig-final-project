@@ -5,6 +5,7 @@ import CameraShake from './CameraShake.js';
 import BackgroundManager from './BackgroundManager.js';
 import ScoreManager from './ScoreManager.js';
 import InputManager from './InputManager.js';
+import LightManager from './LightManager.js';
 import Tick from './Tick.js';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls';
@@ -33,14 +34,15 @@ export default class GameManager {
         const bgImgPath = 'bg/album.jpg'
         // const bgImgPath = 'songs/s1/album.jpg'
 
-        // Add lights
-        this.addLights();
-    
+        
         // Initialize Stats.js
         this.setupStats();
         
         // Initialize GUI
         this.setupGUI();
+        
+        // Add lights
+        this.setupLightManager(this.gui);
 
         // Initialize helpers
         // this.setupHelpers();
@@ -266,26 +268,6 @@ export default class GameManager {
 
     setupGUI() {
         this.gui = new GUI();
-        // Directional light settings
-        const lightFolder = this.gui.addFolder('Directional Light');
-        lightFolder.add(this.directionalLight.position, 'x', -100, 100).name('X Position');
-        lightFolder.add(this.directionalLight.position, 'y', -100, 100).name('Y Position');
-        lightFolder.add(this.directionalLight.position, 'z', -100, 100).name('Z Position');
-        lightFolder.add(this.directionalLight, 'intensity', 0, 2).name('Intensity');
-        lightFolder.close();
-
-        // Ambient light settings
-        const ambientLightFolder = this.gui.addFolder('Ambient Light');
-        ambientLightFolder.add(this.ambientLight, 'intensity', 0, 2).name('Intensity');
-        ambientLightFolder.close();
-
-        // Point light settings
-        const pointLightFolder = this.gui.addFolder('Point Light');
-        pointLightFolder.add(this.pointLight.position, 'x', -100, 100).name('X Position');
-        pointLightFolder.add(this.pointLight.position, 'y', -100, 100).name('Y Position');
-        pointLightFolder.add(this.pointLight.position, 'z', -100, 100).name('Z Position');
-        pointLightFolder.add(this.pointLight, 'intensity', 0, 2).name('Intensity');
-        pointLightFolder.close();
 
         // Camera settings
         const cameraFolder = this.gui.addFolder('Camera');
@@ -327,38 +309,9 @@ export default class GameManager {
         this.scene.add( lightHelper );
     }
 
-    addLights() {
-        // Ambient light
-        this.ambientLight = new THREE.AmbientLight(0xffffff, 1.5); // color, intensity
-        this.scene.add(this.ambientLight);
-
-        // Directional light
-        this.directionalLight = new THREE.DirectionalLight(0xffffff, 1); // color, intensity
-        this.directionalLight.position.set(5, 0, 7.5);
-        // this.directionalLight.castShadow = true; // Enable shadows for directional light
-        this.scene.add(this.directionalLight);
-
-        // Point light
-        this.pointLight = new THREE.PointLight(0xffffff, 1, 100); // color, intensity, distance
-        this.pointLight.position.set(0, 0, 10);
-        // this.pointLight.castShadow = true; // Enable shadows for point light
-        this.scene.add(this.pointLight);
-
-        // Add a moving spotlight
-        this.spotLight = new THREE.SpotLight(0xffffff);
-        this.spotLight.position.set(0, 0, 0); // Initial position
-        this.spotLight.angle = Math.PI / 6;
-        this.spotLight.penumbra = 0.1;
-        this.spotLight.decay = 2;
-        this.spotLight.distance = 200;
-        this.spotLight.castShadow = true;
-        this.scene.add(this.spotLight);
-
-        // Add a target object for the spotlight to follow
-        this.spotLightTarget = new THREE.Object3D();
-        this.spotLightTarget.position.set(0, 0, 0);
-        this.scene.add(this.spotLightTarget);
-        this.spotLight.target = this.spotLightTarget;
+    setupLightManager() {
+        this.lightManager = new LightManager(this.gui);
+        this.lightManager.addToScene(this.scene);
     }
 
     addFog() {
@@ -406,7 +359,7 @@ export default class GameManager {
             currentTick.handleHit(this.scoreManager, this.audioManager, this.scene);
         } else { // MISS or OVERSTRUM
             this.shakeCamera();
-            Tick.handleMiss(this.scoreManager, this.audioManager);
+            Tick.handleMiss(this.scoreManager, this.audioManager, currentNotes);
             this.audioManager.playRandomSoundEffect('strumMiss');
 
             // The missing notes event will be handled from the currentTick.update  
@@ -420,7 +373,9 @@ export default class GameManager {
         if (this.isPaused) return; // Skip the animation frame if the game is paused
         // Will be invoked again from resumeGame() function
 
-        this.thisLoop = new Date();
+        const deltaTime = this.clock.getDelta();
+        this.fps = 1/deltaTime;
+
         this.stats.begin(); // Begin measuring FPS
 
         // Get pressed lanes in this frame
@@ -434,12 +389,10 @@ export default class GameManager {
         this.cameraShake.update(this.camera);
         // this.screenShake.update(this.camera);
 
-        // this.updateLights();
+        this.lightManager.update(this.scoreManager.starPower, deltaTime);
         this.controls.update();
         this.renderer.render(this.scene, this.camera);
         this.stats.end(); // End measuring FPS
-        this.fps = 1000 / (this.thisLoop - this.lastLoop);
-        this.lastLoop = this.thisLoop;
 
         requestAnimationFrame(this.gameLoop.bind(this));
     }
@@ -448,8 +401,8 @@ export default class GameManager {
     startGame() {
         this.audioManager.startAudioSequence();
         const notes = []
-        notes.push(...this.noteManager.createNotes(0,4,false,1,2))
-        notes.push(...this.noteManager.createNotes(0,3,true,1,2))
+        notes.push(...this.noteManager.createNotes(0,4,false,false,1,2))
+        notes.push(...this.noteManager.createNotes(0,3,true,false,1,2))
 
         notes.forEach(note => {
             note.addToScene(this.scene);
@@ -459,8 +412,6 @@ export default class GameManager {
     }
 
     startGameLoop() {
-        this.fps = 60;
-        this.lastLoop = new Date();
         this.gameLoop();
     }
 }

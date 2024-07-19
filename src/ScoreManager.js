@@ -13,8 +13,8 @@ export default class ScoreManager {
         this.starPowerMultiplier = 2;
         // this.starPowerMeasureDuration = 4; // Star power last for 4 measures - 4*beats_per_measure beats
         // for now let's use star power that lasts for a fixed number of notes, it's simple for now
-        this.starPowerNoteDuration = 20;
-        this.starPowerCurrentNoteCount = 0;
+        this.starPowerMeasureDuration = 2;
+        this.starPowerCurrentMeasureCount = 0;
 
         this.regularNoteScore = 50;
 
@@ -23,13 +23,12 @@ export default class ScoreManager {
     }
 
     updateScoreUI() {
-        if (this.starPower) {
-            multiplier.style.color = 0x0000ff
-        }
-
         const score = document.getElementById('score');
         score.innerText = `${this.score}`;
         const multiplier = document.getElementById('multiplier');
+        if (this.starPower) {
+            // TODO: Change appearance
+        }
         multiplier.innerText = `${this.multiplier}x`;
         const streak = document.getElementById('streak');
         streak.innerText = `( ${this.streakCount} )`;
@@ -38,13 +37,6 @@ export default class ScoreManager {
     }
 
     incrementScore(points) {
-        if (this.starPower) {
-            this.starPowerCurrentNoteCount++;
-            if (this.starPowerCurrentNoteCount == this.starPowerNoteDuration) {
-                this.deactivateStarPower();
-            }
-        }
-
         this.streakCount++;
         if (this.streakCount === 10) {
             this.defaultMultiplier = 2;
@@ -66,14 +58,18 @@ export default class ScoreManager {
     resetStreak() {
         this.streakCount = 0;
         this.defaultMultiplier = 1; // it also resets the multiplier
+        this.multiplier = 1;
         // this.updateScoreUI();
     }
 
     activateStarPower() {
+        console.log("STAR POWER ACTIVATED")
         this.starPower = true;
+        this.starPowerCurrentMeasureCount = 0;
     }
 
     deactivateStarPower() {
+        console.log("STAR POWER DEACTIVATED")
         this.starPower = false;
         this.starPowerCurrentNoteCount = 0;
     }
@@ -82,11 +78,19 @@ export default class ScoreManager {
     handleHit(hittedNotes) {
         // We have list of hitted notes, for each of them
         const isSomeNoteStar = hittedNotes.some(n => n.isSpecial);
-        if (isSomeNoteStar && !this.loadingStarPower) { // First note of loading star power phase
+        const isSomeNoteLastStar = hittedNotes.some(n => n.isLastSpecial);
+
+        if (isSomeNoteStar && !this.loadingStarPower && !this.interruptedLoadingStarPower) { // First note of loading star power phase
             this.loadingStarPower = true;
-        } else if (! isSomeNoteStar && this.loadingStarPower) { // First note after loading star power phase => enter star power phase
-            this.loadingStarPower = false;
-            this.activateStarPower();
+        }
+        
+        if (isSomeNoteLastStar) { // Last note after loading star power phase => enter star power phase
+            this.interruptedLoadingStarPower = false;
+            
+            if (this.loadingStarPower) {
+                this.loadingStarPower = false;
+                this.activateStarPower();
+            }
         }
 
         // Increment score
@@ -99,10 +103,15 @@ export default class ScoreManager {
         this.updateScoreUI();
     }
 
-    handleMiss() {
-        if (this.loadingStarPower) {
+    handleMiss(missedNotes) {
+        if (this.loadingStarPower || missedNotes.some(n => n.isSpecial)) {
+            this.interruptedLoadingStarPower = true;
+
             // We are no longer in the star power loading phase
             this.loadingStarPower = false;
+        }
+        if (missedNotes.some(n => n.isLastSpecial)) {
+            this.interruptedLoadingStarPower = false;
         }
 
         // If we were in the star power we must deactivate it

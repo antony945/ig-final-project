@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 export default class Note {
     // TODO: Support starPower parameter to change appearance during starPower
-    constructor(measure, tick, laneIndex, start_x, start_y, start_z, noteRadius, laneWidth, laneHeight, color, isSpecial=false, starPowerActive=false) {
+    constructor(measure, tick, laneIndex, start_x, start_y, start_z, noteRadius, laneWidth, laneHeight, color, isSpecial=false, isLastSpecial=false, starPowerActive=false) {
         this.measure = measure;
         this.tick = tick;
         this.laneIndex = laneIndex;
@@ -15,34 +15,26 @@ export default class Note {
         this.start_y = start_y;
         this.max_y = laneHeight / 2;
         this.min_y = -laneHeight / 2;
+        this.meshName = "lane_" + laneIndex;
 
         // Start from the top and ensure it is in front of the fretboard
         this.starting_position = new THREE.Vector3(this.x, this.start_y, this.z);
 
         // Define materials
-        const mainMaterial = new THREE.MeshStandardMaterial({
-            color: this.color, // Base color of the material
-            metalness: 0.6,  // metallic
-            roughness: 0.4   // Slightly smooth for a reflective look
-        });
-
-        const sideMaterial = new THREE.MeshStandardMaterial({
+        this.mainMaterial = this.createRegularMaterial()
+        this.sideMaterial = new THREE.MeshStandardMaterial({
             color: 0xffffff,
             metalness: 0.2,
             roughness: 0.6
         });
-        const mainMaterialSpecial = new THREE.MeshNormalMaterial();
+        this.mainMaterialStarPower = this.createStarPowerMaterial()
         
-        if (! starPowerActive) {
-            // Normal circular note
-            this.mesh = this.createMesh(mainMaterial, sideMaterial, isSpecial);
-        } else {
-            // Special octagonal note
-            this.mesh = this.createMesh(mainMaterialSpecial, sideMaterial, isSpecial);
-        }
+        // Normal circular note
+        this.mesh = this.createMesh(this.mainMaterial, this.sideMaterial, isSpecial);
 
-        // this.mesh.castShadow = true; // Ensure the note casts shadows
-        // this.mesh.receiveShadow = true; // Ensure the note receives shadows
+
+        this.mesh.castShadow = true; // Ensure the note casts shadows
+        this.mesh.receiveShadow = true; // Ensure the note receives shadows
 
         // Other parameters
         this.collided = false;
@@ -50,6 +42,23 @@ export default class Note {
         this.hitted = false;
         // Is true if the note is part of the loading star power phase
         this.isSpecial = isSpecial;
+        this.isLastSpecial = isLastSpecial;
+        this.isStarPowerMaterialOn = false;
+    }
+
+    createRegularMaterial() {
+        return new THREE.MeshStandardMaterial({
+            color: this.color, // Base color of the material
+            metalness: 0.6,  // metallic
+            roughness: 0.4,   // Slightly smooth for a reflecstive look
+            name: "regular_"+this.color
+        });
+    }
+
+    createStarPowerMaterial() {
+        return new THREE.MeshNormalMaterial({
+            name: "starPower"
+        });
     }
 
     createEdgeMesh(geometry, color, thresholdAngle=120) {
@@ -60,6 +69,8 @@ export default class Note {
     };
 
     createMesh(mainMaterial, sideMaterial, isSpecial) {
+        this.material = mainMaterial;
+
         const bottomRadius = .95*this.noteRadius;
         const topRadius = .4*this.noteRadius;  
         // const topTopRadius = .3*this.noteRadius;
@@ -74,7 +85,7 @@ export default class Note {
         if (isSpecial) {
             meshes = this.createStarMeshes(topRadius, bottomRadius, centralHeight, bottomHeight, topHeight, sideMaterial, mainMaterial);
         } else {
-            meshes = this.createNormalMeshes(topRadius, bottomRadius, centralHeight, bottomHeight, topHeight, sideMaterial, mainMaterial);
+            meshes = this.createRegularMeshes(topRadius, bottomRadius, centralHeight, bottomHeight, topHeight, sideMaterial, mainMaterial);
         }
         
         const bottomMesh = meshes.bottom.mesh
@@ -88,6 +99,7 @@ export default class Note {
         
         bottomMesh.add(bottomEdges);
         centralMesh.add(centralEdges);
+        centralMesh.name = "central";
         topMesh.add(topEdges);
 
         // FINAL NOTE
@@ -96,6 +108,8 @@ export default class Note {
         mesh.add(centralMesh);
         mesh.add(topMesh);
         mesh.position.copy(this.starting_position);
+        mesh.name = this.meshName
+        // mesh.name = "lane_" + this.laneIndex;
 
         return mesh
 
@@ -107,7 +121,7 @@ export default class Note {
         // this.mesh.position.copy(this.starting_position);
     }
 
-    createNormalMeshes(topRadius, bottomRadius, centralHeight, bottomHeight, topHeight, sideMaterial, mainMaterial) {
+    createRegularMeshes(topRadius, bottomRadius, centralHeight, bottomHeight, topHeight, sideMaterial, mainMaterial) {
         bottomRadius *= 1.25;
         
         const bottomGeometry = new THREE.CylinderGeometry(bottomRadius, bottomRadius, bottomHeight, 32, 1);
@@ -217,12 +231,15 @@ export default class Note {
         bottomGeometry.computeVertexNormals();
         
         // Darken bottom mesh with main material color
-        const topMaterial = sideMaterial.clone()
-        topMaterial.color.set(this.darkenColor(mainMaterial.color, .95))
+        const bottomMaterial = sideMaterial.clone()
+        if (mainMaterial.color === undefined) {
+            bottomMaterial.color.set(0x000000)
+        } else {
+            bottomMaterial.color.set(this.darkenColor(mainMaterial.color, .95))
+        }
         
         // Create the geometry and mesh
-        const bottomMesh = new THREE.Mesh(bottomGeometry, topMaterial);
-
+        const bottomMesh = new THREE.Mesh(bottomGeometry, bottomMaterial);
 
         // Create the vertices and faces for the bottom
         const centralGeometry = new THREE.BufferGeometry();
@@ -266,16 +283,26 @@ export default class Note {
     darkenColor(color, percentage) {
         const hsl = {};
         color.getHSL(hsl);
-        console.log(hsl)
         hsl.l *= (1 - percentage); // Reduce lightness by the percentage
         const darkenedColor = new THREE.Color();
         darkenedColor.setHSL(hsl.h, hsl.s, hsl.l);
         return darkenedColor;
     }
 
-    update() {
+    update(interruptedLoadingStarPower, scene) {
         if (this.isSpecial) {
             this.mesh.rotation.z += 0.03;
+        
+            if (interruptedLoadingStarPower) {
+                // Need to change its shape
+                // Unique way is to remove from scene and add another
+                this.removeFromScene(scene);
+                // Change mesh creating a new one normal-shaped
+                this.mesh = this.createMesh(this.mainMaterial, this.sideMaterial, false);
+                // Add it asato scene
+                this.addToScene(scene);
+                // scene.add(this.mesh);
+            }
         }
     }
     

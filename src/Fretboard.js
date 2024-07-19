@@ -58,7 +58,7 @@ export default class Fretboard {
             color: 0x000000,
             transparent: true,
             // side: THREE.DoubleSide,
-            opacity: 0.4
+            opacity: 0.3
         });
         this.darkOverlayMesh = new THREE.Mesh(this.geometry, this.darkOverlayMaterial);
         // this.mesh.add(this.darkOverlayMesh); // Add the overlay to the fretboard

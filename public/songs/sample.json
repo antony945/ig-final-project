@@ -11,12 +11,12 @@
       {
         "measure": 0,
         "tick": 1,
-        "lanes": [0,1,2,3]
+        "lanes": [0,1]
       },
       {
         "measure": 0,
         "tick": 3,
-        "lanes": [1,2,3,4]
+        "lanes": [0,1]
       },
       "end_loading_star_phase",
       {
@@ -29,13 +29,25 @@
         "tick": 0,
         "lanes": [2]
       },
+      "begin_loading_star_phase",
       {
         "measure": 3,
+        "tick": 1,
+        "lanes": [0,1]
+      },
+      {
+        "measure": 3,
+        "tick": 3,
+        "lanes": [0,1]
+      },
+      "end_loading_star_phase",
+      {
+        "measure": 4,
         "tick": 0,
         "lanes": [3]
       },
       {
-        "measure": 4,
+        "measure": 5,
         "tick": 0,
         "lanes": [4]
       }
