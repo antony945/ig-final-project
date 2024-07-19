@@ -13,7 +13,7 @@ class LightManager {
         this.createDirectionalLight(0xffffff, [5, 0, 7.5]);
         this.createAmbientLight(0x404040);
         this.createPointLight(0xffffff, [0, 0, 10]);
-        // this.createSpotLight();
+        this.createSpotLight(0xffffff, [0, 5, 5]);
     }
 
     addToScene(scene) {
@@ -47,7 +47,7 @@ class LightManager {
         this.addLightGUI('Directional Light', light);
     }
 
-    createAmbientLight(color, position) {
+    createAmbientLight(color) {
         const light = new THREE.AmbientLight(color, 2); // Soft white light
         this.createLight(light, color, null)
 
@@ -55,39 +55,41 @@ class LightManager {
         this.addLightGUI('Ambient Light', light);
     }
 
-    createSpotLight(oclor, position) {
-        // Add a moving spotlight
-        const spotLight = new THREE.SpotLight(0xffffff);
-        spotLight.position.set(0, 0, 0); // Initial position
-        spotLight.angle = Math.PI / 6;
-        spotLight.penumbra = 0.1;
-        spotLight.decay = 2;
-        spotLight.distance = 200;
-        spotLight.castShadow = true;
-        
-        // Add a target object for the spotlight to follow
-        this.spotLightTarget = new THREE.Object3D();
-        this.spotLightTarget.position.set(0, 0, 0);
-        // this.scene.add(this.spotLightTarget);
-        spotLight.target = this.spotLightTarget;
-        this.lights.push(spotLight);
+    createSpotLight(color, position) {
+        const light = new THREE.SpotLight(color);
+        light.position.set(...position);
+        light.castShadow = true;
+        light.angle = Math.PI / 4;
+        light.penumbra = 0.1;
+        light.decay = 2;
+        light.distance = 200;
+
+        this.lights.push(light);
+        // Add GUI folder for this light if needed
+        this.addLightGUI('Spot Light', light, true);
     }
 
-    addLightGUI(name, light) {
+    addLightGUI(name, light, isSpotLight = false) {
         const folder = this.gui.addFolder(name);
         const lightColor = { color: light.color.getHex() };
-
         folder.addColor(lightColor, 'color').onChange((value) => {
             light.color.set(value);
         });
 
-        if (light.position) {
-            folder.add(light.position, 'x', -50, 50);
-            folder.add(light.position, 'y', -50, 50);
-            folder.add(light.position, 'z', -50, 50);
+        if (light.originalPosition) {
+            folder.add(light.position, 'x', -50, 50).listen();
+            folder.add(light.position, 'y', -50, 50).listen();
+            folder.add(light.position, 'z', -10, 50).listen();
         }
 
-        folder.add(light, 'intensity', 0, 2);
+        folder.add(light, 'intensity', 0, 2).listen();
+
+        if (isSpotLight) {
+            folder.add(light, 'angle', 0, Math.PI / 2).name('Angle').listen();
+            folder.add(light, 'penumbra', 0, 1).name('Penumbra').listen();
+            folder.add(light, 'decay', 1, 2).name('Decay').listen();
+            folder.add(light, 'distance', 0, 200).name('Distance').listen();
+        }
 
         this.lightFolders.push(folder);
     }

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import Lane from './Lane.js';
 import * as Utils from './utils.js'; // Adjust the path as necessary
+import particleFire from 'three-particle-fire';
 
 export default class Fretboard {
     static fretboardZ = -0.01;
@@ -24,7 +25,9 @@ export default class Fretboard {
 
         this.pickupHeight = 0.8; // Height of pickup
         this.pickupOffset = 0.5; // Offset of pickup
-        
+
+        particleFire.install( { THREE: THREE } );
+
         // Create fretboard
         this.createFretboard(this.fretboardWidth, this.fretboardHeight, this.texturePath);      
         
@@ -129,11 +132,19 @@ export default class Fretboard {
             0.0
         );
 
+        this.fireEffects = this.createFireEffects(
+            this.holeRadius,
+            Fretboard.pressEffectHeight,
+            100,
+            0xff2200
+        )
+
         // Combine all together
         this.pickupMesh = new THREE.Object3D();
         this.pickupMesh.add(this.pickupAreaMesh);
         this.pickupMesh.add(...this.holeMeshes);
         this.pickupMesh.add(...this.pressEffects);
+        this.pickupMesh.add(...this.fireEffects);
         
         // Adjust position at the bottom of the fretboard
         this.pickupY = -(laneHeight / 2) + pickupOffset;
@@ -186,6 +197,26 @@ export default class Fretboard {
             holeMeshes.push(holeMesh);
         }
         return holeMeshes;
+    }
+
+    createFireEffects(fireRadius, fireHeight, particleCount, fireColor) {
+        const height = window.innerHeight;
+
+        const fireEffects = [];
+        for (let i = 0; i < this.numLanes; i++) {
+            const geometry = new particleFire.Geometry( fireRadius, fireHeight, particleCount );
+            const material = new particleFire.Material( { color: fireColor } );
+            material.setPerspective( 75, height );
+            const particleFireMesh = new THREE.Points( geometry, material );
+            particleFireMesh.rotation.x = Math.PI / 2;
+            particleFireMesh.position.copy(this.holeMeshes[i].position);
+            particleFireMesh.position.z += fireHeight/2;
+
+            particleFireMesh.visible = false;
+            fireEffects.push(particleFireMesh);
+        }
+        return fireEffects;
+        // scene.add( particleFireMesh0 );
     }
 
     // TODO: Check them
@@ -251,8 +282,18 @@ export default class Fretboard {
         // or 1/fps
     }
 
-    update(pressedLanesIndices, speed) {
+    updateFireEffects(delta) {
+        this.fireEffects.forEach(fireMesh => {
+            if (fireMesh.visible) {
+                console.log("here")
+                fireMesh.material.update(delta)
+            }
+        });
+    }
+
+    update(pressedLanesIndices, delta, speed) {
         this.updatePressAnimations(pressedLanesIndices);
         this.updateTextureScroll(speed);
+        this.updateFireEffects(delta)
     }
 }

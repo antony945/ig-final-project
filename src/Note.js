@@ -52,13 +52,15 @@ export default class Note {
             color: this.color, // Base color of the material
             metalness: 0.6,  // metallic
             roughness: 0.4,   // Slightly smooth for a reflecstive look
-            name: "regular_"+this.color
+            name: "regular_"+this.color,
+            wireframe: false
         });
     }
 
     createStarPowerMaterial() {
         return new THREE.MeshNormalMaterial({
-            name: "starPower"
+            name: "starPower",
+            wireframe: false
         });
     }
 

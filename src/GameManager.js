@@ -25,6 +25,16 @@ export default class GameManager {
         // this.setupFretboard(5, 15, 'textures/fretboard.jpg', 5)
         this.setupFretboard(5, 15, 'textures/GH2_beta-Metal.png', 5)
 
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            this.camera.aspect = window.innerWidth / window.innerHeight;
+            this.camera.updateProjectionMatrix();
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
+            this.fretboard.fireEffects.forEach(fireEffect => {
+                fireEffect.material.setPerspective(this.camera.fov, window.innerHeight);
+            });
+        });
+
         // Create noteManager
         // this.setupNoteManager(142, 4, 'songs/sample.json');
         this.setupNoteManager(116, 4, 'songs/sample.json');
@@ -251,13 +261,6 @@ export default class GameManager {
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
 
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            this.camera.aspect = window.innerWidth / window.innerHeight;
-            this.camera.updateProjectionMatrix();
-            this.renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
         // Create a clock
         this.clock = new THREE.Clock();
     }
@@ -314,6 +317,30 @@ export default class GameManager {
     setupLightManager() {
         this.lightManager = new LightManager(this.gui);
         this.lightManager.addToScene(this.scene);
+
+        // create helpers for all the lights in the lightManager depending on their type
+        // create helpers for all the lights in the lightManager depending on their type
+        this.lightManager.lights.forEach(light => {
+            let helper;
+
+            if (light instanceof THREE.DirectionalLight) {
+                helper = new THREE.DirectionalLightHelper(light);
+            } else if (light instanceof THREE.SpotLight) {
+                helper = new THREE.SpotLightHelper(light);
+            } else if (light instanceof THREE.PointLight) {
+                helper = new THREE.PointLightHelper(light);
+            } else if (light instanceof THREE.HemisphereLight) {
+                helper = new THREE.HemisphereLightHelper(light);
+            } else if (light instanceof THREE.RectAreaLight) {
+                // RectAreaLightHelper is not part of the core three.js library, it might be in an example library
+                helper = new RectAreaLightHelper(light);
+            } else {
+                console.warn('Unknown light type:', light);
+                return;
+            }
+
+            this.scene.add(helper);
+        });
     }
 
     addFog() {
@@ -385,7 +412,7 @@ export default class GameManager {
         // console.log(this.fps)
 
         this.noteManager.update(this.scoreManager, this.audioManager, this.fps, this.scene); // Update ticks and notes position and handles miss without strumming   
-        this.fretboard.update(pressedLanesIndices, this.noteManager.tickSpeed); // Update fretboard texture and press effects
+        this.fretboard.update(pressedLanesIndices, deltaTime, this.noteManager.tickSpeed); // Update fretboard texture and press effects
         
         this.cameraShake.update(this.camera);
         // this.screenShake.update(this.camera);
@@ -401,14 +428,14 @@ export default class GameManager {
     // Starts the game and runs gameLoop
     startGame() {
         this.audioManager.startAudioSequence(NoteManager.introMeasures, this.noteManager.measureDuration);
-        // const notes = []
-        // notes.push(...this.noteManager.createNotes(0,4,false,false,1,2))
-        // notes.push(...this.noteManager.createNotes(0,3,true,false,1,2))
+        const notes = []
+        notes.push(...this.noteManager.createNotes(0,4,false,false,1,2))
+        notes.push(...this.noteManager.createNotes(0,3,true,false,1,2))
 
-        // notes.forEach(note => {
-        //     note.addToScene(this.scene);
-        //     note.mesh.visible = true
-        // })
+        notes.forEach(note => {
+            note.addToScene(this.scene);
+            note.mesh.visible = true
+        })
         this.startGameLoop();
     }
 

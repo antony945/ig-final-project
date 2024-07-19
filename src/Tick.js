@@ -127,13 +127,7 @@ export default class Tick {
 
     // TODO: Make it better
     enableHitEffect() {
-    }
-
-    enableStarPowerNotes(scoreManager) {
         
-
-        // Change material of all sub
-        scoreManager.starPowerNoteDuration
     }
 
     handleHit(scoreManager, audioManager, scene) {
