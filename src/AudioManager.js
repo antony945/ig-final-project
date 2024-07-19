@@ -43,11 +43,11 @@ export default class AudioManager {
         return currentTime
     }
 
-    startAudioSequence() {
+    startAudioSequence(introMeasures, measureDuration) {
         const index = 2;
         this.scheduleTask(() => this.playSoundEffect('songStart', index), 500);
         this.scheduleTask(() => this.playDefaultSoundEffect('crowdStart'), 1000);
-        this.scheduleTask(() => this.playMainSong(), 4000);
+        this.scheduleTask(() => this.playMainSong(), (introMeasures)*measureDuration*1000);
     }
 
     scheduleTask(callback, delay) {
@@ -108,6 +108,8 @@ export default class AudioManager {
     }
 
     playMainSong() {
+        console.log("HEREEEEEE")
+
         if (this.mainSong.isPlaying) return;
         this.mainSong.play();
         return this.mainSong.duration;

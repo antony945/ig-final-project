@@ -18,7 +18,7 @@ export default class Tick {
     //     'beat': 0xFF0000,
     //     'measure': 0x0000FF
     // }
-    static lowerVolumeAmout = 0.7;
+    static lowerVolumeAmout = 0.4;
     
     constructor(tickIndex, ticksPerMeasure, tickSpace, totalTicks, fretboardWidth, fretboardHeight, pickupOffset, pickupHeight) {
         this.tickIndex = tickIndex;
@@ -223,7 +223,7 @@ export default class Tick {
         // Hit all the notes but make them unvisible
         Object.values(this.notes).forEach(note => {
             // Make the note rotate if it special
-            note.update(scoreManager.interruptedLoadingStarPower, scene)
+            note.update(scoreManager.interruptedLoadingStarPower, scoreManager.starPower, scene)
 
             // if (!note.mesh.visible && this.mesh.visible) {
             // console.log("hitted, here")

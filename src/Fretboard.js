@@ -39,8 +39,8 @@ export default class Fretboard {
         // Apply texture
         this.textureLoader = new THREE.TextureLoader();
         this.texture = this.textureLoader.load(texturePath);
-        this.texture.wrapS = THREE.RepeatWrapping;
-        // this.texture.wrapT = THREE.RepeatWrapping;
+        // this.texture.wrapS = THREE.RepeatWrapping;
+        this.texture.wrapT = THREE.RepeatWrapping;
         // this.texture.repeat.set(1, this.height);
 
         // Create main plane
@@ -247,7 +247,8 @@ export default class Fretboard {
 
     updateTextureScroll(speed) {
         // Update the texture offset
-        this.texture.offset.y += (speed);
+        this.texture.offset.y += (speed/this.fretboardHeight);
+        // or 1/fps
     }
 
     update(pressedLanesIndices, speed) {

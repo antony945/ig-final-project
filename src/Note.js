@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 
 export default class Note {
+    static starPowerColor = 0x4FDDDA;
+
     // TODO: Support starPower parameter to change appearance during starPower
     constructor(measure, tick, laneIndex, start_x, start_y, start_z, noteRadius, laneWidth, laneHeight, color, isSpecial=false, isLastSpecial=false, starPowerActive=false) {
         this.measure = measure;
@@ -27,11 +29,10 @@ export default class Note {
             metalness: 0.2,
             roughness: 0.6
         });
-        this.mainMaterialStarPower = this.createStarPowerMaterial()
+        // this.mainMaterialStarPower = this.createStarPowerMaterial();
         
         // Normal circular note
         this.mesh = this.createMesh(this.mainMaterial, this.sideMaterial, isSpecial);
-
 
         this.mesh.castShadow = true; // Ensure the note casts shadows
         this.mesh.receiveShadow = true; // Ensure the note receives shadows
@@ -289,7 +290,7 @@ export default class Note {
         return darkenedColor;
     }
 
-    update(interruptedLoadingStarPower, scene) {
+    update(interruptedLoadingStarPower, starPower, scene) {
         if (this.isSpecial) {
             this.mesh.rotation.z += 0.03;
         
@@ -304,6 +305,33 @@ export default class Note {
                 // scene.add(this.mesh);
             }
         }
+        if (!this.isStarPowerMaterialOn && starPower) {
+            this.material.color.setHex(Note.starPowerColor);
+            this.isStarPowerMaterialOn = true;
+        } else if (this.isStarPowerMaterialOn && !starPower) {
+            this.material.color.setHex(this.color);
+            this.isStarPowerMaterialOn = false;
+        }
+
+        // if (starPower) {
+        //     scene.traverse(obj => {
+        //         if(obj.isMesh && obj.material.name.includes('regular')) {
+        //            obj.material = this.mainMaterialStarPower;
+        //         }
+        //     });
+        //     this.isStarPowerMaterialOn = true;
+        // } else if (this.isStarPowerMaterialOn && !starPower) {
+            
+        //     scene.traverse(obj => {
+        //         if (obj.isMesh && obj.material.name.includes('starPower')) {
+        //             obj.material = this.mainMaterial;
+        //         }
+        //     });
+        //     // this.mesh.getObjectByName('central').material = this.mainMaterial;
+        //     // console.log(this.mesh)
+        //     // this.mesh.material.color.set(this.color);
+        //     this.isStarPowerMaterialOn = false;
+        // }
     }
     
     reset() {

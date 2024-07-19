@@ -22,15 +22,17 @@ export default class GameManager {
         // this.addFog();
         
         // Create fretboard
-        this.setupFretboard(5, 15, 'textures/fretboard.jpg', 5)
+        // this.setupFretboard(5, 15, 'textures/fretboard.jpg', 5)
+        this.setupFretboard(5, 15, 'textures/GH2_beta-Metal.png', 5)
 
         // Create noteManager
-        this.setupNoteManager(142, 4, 'songs/sample.json');
+        // this.setupNoteManager(142, 4, 'songs/sample.json');
+        this.setupNoteManager(116, 4, 'songs/sample.json');
         
         // Initialize audio
         // this.setupAudioManager('songs/s0/take_me_out.mp3', 'songs/s0/song.ini');
         // this.setupAudioManager('songs/s0/take_me_out.mp3', 'songs/s0/song.ini');
-        this.setupAudioManager('songs/s0');
+        this.setupAudioManager('songs/s1');
         const bgImgPath = 'bg/album.jpg'
         // const bgImgPath = 'songs/s1/album.jpg'
 
@@ -375,7 +377,6 @@ export default class GameManager {
 
         const deltaTime = this.clock.getDelta();
         this.fps = 1/deltaTime;
-
         this.stats.begin(); // Begin measuring FPS
 
         // Get pressed lanes in this frame
@@ -399,15 +400,15 @@ export default class GameManager {
 
     // Starts the game and runs gameLoop
     startGame() {
-        this.audioManager.startAudioSequence();
-        const notes = []
-        notes.push(...this.noteManager.createNotes(0,4,false,false,1,2))
-        notes.push(...this.noteManager.createNotes(0,3,true,false,1,2))
+        this.audioManager.startAudioSequence(NoteManager.introMeasures, this.noteManager.measureDuration);
+        // const notes = []
+        // notes.push(...this.noteManager.createNotes(0,4,false,false,1,2))
+        // notes.push(...this.noteManager.createNotes(0,3,true,false,1,2))
 
-        notes.forEach(note => {
-            note.addToScene(this.scene);
-            note.mesh.visible = true
-        })
+        // notes.forEach(note => {
+        //     note.addToScene(this.scene);
+        //     note.mesh.visible = true
+        // })
         this.startGameLoop();
     }
 

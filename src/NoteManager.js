@@ -20,7 +20,7 @@ export default class NoteManager {
     static timeToReactMillisecond = 2000;
     static ticksPerBeat = 2;
     static defaultFPS = 60;
-    static introMeasures = 2
+    static introMeasures = 3
 
     constructor(fretboard, beatsPerMinute, beatsPerMeasure, notesFile, mainSong) {
         this.fretboard = fretboard;
@@ -37,11 +37,13 @@ export default class NoteManager {
         this.measureDuration = this.beatDuration * this.beatsPerMeasure;
         
         // Other parameters
-        this.visibleBeatLinesCount = Math.floor(NoteManager.timeToReactMillisecond/1000 * this.beatsPerSecond);
+        this.visibleBeatLinesCount = Math.ceil(NoteManager.timeToReactMillisecond/1000 * this.beatsPerSecond);
         this.visibleTickLinesCount = this.visibleBeatLinesCount*NoteManager.ticksPerBeat;
+
         // TICK_SPACE = LANE_LENGTH/(TIME_TO_REACT (s) * BeatPerSecond * 2)
         // TICK_SPACE = LANE_LENGTH/(DEFAULT_VISIBLE_BEAT_LINES*2)
-        this.tickSpace = this.fretboard.fretboardHeight / this.visibleTickLinesCount;
+        // this.tickSpace = (this.fretboard.fretboardHeight-this.fretboard.pickupHeight-this.fretboard.pickupOffset) / this.visibleTickLinesCount;
+        this.tickSpace = (this.fretboard.fretboardHeight) / ((NoteManager.timeToReactMillisecond/1000) * this.beatsPerSecond * NoteManager.ticksPerBeat)
         this.measureSpace = this.tickSpace*this.ticksPerMeasure;   
 
         // Setup speed
@@ -193,6 +195,7 @@ export default class NoteManager {
         // lane_speed, calculated by knowing that we want a default number of beats lines on the screen
         // e.g.
         // DEFAULT_VISIBLE_BEAT_LINES = TIME_TO_REACT (s) * BPS (beat/s) = [beat]
+        // DEFAULT_VISIBLE_TICK_LINES = TIME_TO_REACT * TICK/S = TIME_TO_REACT * BEAT/S * TICK/BEAT
         //
         // LANE_LENGTH = 20 (space)
         // lane_speed = LANE_LENGTH/(DEFAULT_VISIBLE_BEAT_LINES * SECONDS_PER_BEAT) / FPS
@@ -200,7 +203,7 @@ export default class NoteManager {
         // lane_speed = LANE_LENGTH/TIME_TO_REACT / FPS [ threejs.uom / frame]
         // decide if check sometime how many fps we have in order to speedup or not the game
         // this.speed = (this.fretboard.height / (this.visibleBeatLinesCount * this.beatDuration)) / NoteManager.defaultFPS;
-        this.speed = (this.fretboard.fretboardHeight / (NoteManager.timeToReactMillisecond/1000));
+        this.speed = (this.fretboard.fretboardHeight) / (NoteManager.timeToReactMillisecond/1000);
         // console.log("speed ", this.speed1)
         // console.log("speed ", this.speed2)
     }
@@ -347,7 +350,7 @@ export default class NoteManager {
         // console.log(this.tickSpeed)
 
         // Initialize current tick
-        this.currentTick = null;
+        this.curreasjasjasntTick = null;
 
         // Update tick lines
         this.tickLines.forEach(tl => {
@@ -406,7 +409,8 @@ export default class NoteManager {
         //         }
         //     });
         //     this.isStarPowerMaterialOn = true;
-        // } else if (this.isStarPowerMaterialOn && !starPower) {
+        // }
+        // else if (this.isStarPowerMaterialOn && !starPower) {
             
         //     // scene.traverse(obj => {
         //     //     if (obj.isMesh && obj.material.name.includes('starPower')) {
