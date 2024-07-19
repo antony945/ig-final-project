@@ -25,6 +25,7 @@ export default class Note {
             metalness: 0.6,  // metallic
             roughness: 0.4   // Slightly smooth for a reflective look
         });
+
         const sideMaterial = new THREE.MeshStandardMaterial({
             color: 0xffffff,
             metalness: 0.2,
@@ -214,9 +215,14 @@ export default class Note {
         // Set faces
         bottomGeometry.setIndex(indicesBottom);
         bottomGeometry.computeVertexNormals();
-        // Create the geometry and mesh    
-        const bottomMesh = new THREE.Mesh(bottomGeometry, sideMaterial);
-        // console.log(bottomMesh);
+        
+        // Darken bottom mesh with main material color
+        const topMaterial = sideMaterial.clone()
+        topMaterial.color.set(this.darkenColor(mainMaterial.color, .95))
+        
+        // Create the geometry and mesh
+        const bottomMesh = new THREE.Mesh(bottomGeometry, topMaterial);
+
 
         // Create the vertices and faces for the bottom
         const centralGeometry = new THREE.BufferGeometry();
@@ -239,7 +245,8 @@ export default class Note {
         const topMesh = new THREE.Mesh(topGeometry, sideMaterial);
         topMesh.rotation.x = Math.PI / 2;
         topMesh.rotation.y = Math.PI / 2;
-        topMesh.position.z = centralHeight + bottomHeight - topHeight;
+        topMesh.position.z = centralHeight + bottomHeight - topHeight;        
+        
         return {
             bottom: {
                 geometry: bottomGeometry,
@@ -256,6 +263,16 @@ export default class Note {
         }
     }
     
+    darkenColor(color, percentage) {
+        const hsl = {};
+        color.getHSL(hsl);
+        console.log(hsl)
+        hsl.l *= (1 - percentage); // Reduce lightness by the percentage
+        const darkenedColor = new THREE.Color();
+        darkenedColor.setHSL(hsl.h, hsl.s, hsl.l);
+        return darkenedColor;
+    }
+
     update() {
         if (this.isSpecial) {
             this.mesh.rotation.z += 0.03;
