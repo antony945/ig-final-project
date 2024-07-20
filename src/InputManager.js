@@ -37,6 +37,10 @@ export default class InputManager {
 
     onKeyUp(e) {
         if (this.keyMap[e.key.toUpperCase()] !== undefined) {
+            // Check if the released key was strum
+            if (this.keyMap[e.key.toUpperCase()] == 'strum') {
+                this.gameManager.fretboard.disableActiveFireEffects()
+            }
             // this.keysPressed[e.key.toUpperCase()] = false;
             delete this.keysPressed[e.key.toUpperCase()];
         }

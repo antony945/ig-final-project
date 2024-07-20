@@ -7,7 +7,10 @@ export default class Fretboard {
     static fretboardZ = -0.01;
     static laneZ = 0.1;
     static pickupZ = 0.00;
-    static pressEffectHeight = 0.25;
+    static pressEffectHeight = 0.01;
+    static fireEffectParticleCount = 400;
+    static fireEffectHeight = 1.00;
+    static fireEffectColor = 0xff2200; // 0xaa4203
     static colors = {
         0: 0x00ff00,
         1: 0xff0000,
@@ -132,11 +135,12 @@ export default class Fretboard {
             0.0
         );
 
+        // Fire effects
         this.fireEffects = this.createFireEffects(
-            this.holeRadius,
-            Fretboard.pressEffectHeight,
-            100,
-            0xff2200
+            this.holeRadius/2,
+            Fretboard.fireEffectHeight,
+            Fretboard.fireEffectParticleCount,
+            Fretboard.fireEffectColor 
         )
 
         // Combine all together
@@ -168,7 +172,7 @@ export default class Fretboard {
         pickupAreaMesh.position.z = relativeZ;
 
         // Don't make it visible
-        pickupAreaMesh.visible = false;
+        pickupAreaMesh.visible = true;
         return pickupAreaMesh;
     }
 
@@ -199,6 +203,7 @@ export default class Fretboard {
         return holeMeshes;
     }
 
+    // TODO: Check them
     createFireEffects(fireRadius, fireHeight, particleCount, fireColor) {
         const height = window.innerHeight;
 
@@ -210,13 +215,41 @@ export default class Fretboard {
             const particleFireMesh = new THREE.Points( geometry, material );
             particleFireMesh.rotation.x = Math.PI / 2;
             particleFireMesh.position.copy(this.holeMeshes[i].position);
-            particleFireMesh.position.z += fireHeight/2;
+            // particleFireMesh.position.z += fireHeight/2;
 
             particleFireMesh.visible = false;
             fireEffects.push(particleFireMesh);
         }
         return fireEffects;
         // scene.add( particleFireMesh0 );
+    }
+
+    isFireEffectActive(fireEffect) {
+        return fireEffect.visible
+    }
+
+    enableFireEffect(laneIndex) {
+        this.enableFireEffectOriginal(this.fireEffects[laneIndex]);
+        // this.fireTickCounter[laneIndex] = 0
+    }
+
+    enableFireEffectOriginal(fireEffect) {
+        fireEffect.visible = true;
+    }
+
+    disableFireEffect(laneIndex) {
+        this.disableFireEffectOriginal(this.fireEffects[laneIndex]);
+    }
+
+    disableFireEffectOriginal(fireEffect) {
+        fireEffect.visible = false;
+    }
+
+    disableActiveFireEffects() {
+        // Check active fires
+        this.fireEffects.filter(fireEffect => this.isFireEffectActive(fireEffect)).forEach(fireEffect => {
+            this.disableFireEffectOriginal(fireEffect);
+        });
     }
 
     // TODO: Check them
@@ -284,8 +317,8 @@ export default class Fretboard {
 
     updateFireEffects(delta) {
         this.fireEffects.forEach(fireMesh => {
-            if (fireMesh.visible) {
-                console.log("here")
+            if (this.isFireEffectActive(fireMesh)) {
+                // console.log("here")
                 fireMesh.material.update(delta)
             }
         });

@@ -126,11 +126,14 @@ export default class Tick {
     }
 
     // TODO: Make it better
-    enableHitEffect() {
-        
+    enableHitEffect(fretboard) {
+        this.getNotesLaneIndices().forEach(laneIndex => {
+            fretboard.enableFireEffect(laneIndex);
+            // setTimeout(fretboard.disableFireEffect(laneIndex), 2000);
+        })
     }
 
-    handleHit(scoreManager, audioManager, scene) {
+    handleHit(fretboard, scoreManager, audioManager, scene) {
         console.log("HIT (in lane " + this.getNotesLaneIndices() + " with " + this.accuracy.toFixed(2)+"% accuracy)")
 
         // Update score
@@ -145,7 +148,7 @@ export default class Tick {
         this.hitted = true;
 
         // TODO: Use another animation with flames
-        this.enableHitEffect();
+        this.enableHitEffect(fretboard);
 
         // TODO: Handle in better way
         Object.values(this.notes).forEach(note => {

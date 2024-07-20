@@ -385,7 +385,7 @@ export default class GameManager {
             const currentTick = this.noteManager.currentTick;
             
             // Update score, re-put volume as original and generate hit effect 
-            currentTick.handleHit(this.scoreManager, this.audioManager, this.scene);
+            currentTick.handleHit(this.fretboard, this.scoreManager, this.audioManager, this.scene);
         } else { // MISS or OVERSTRUM
             this.shakeCamera();
             Tick.handleMiss(this.scoreManager, this.audioManager, currentNotes);
