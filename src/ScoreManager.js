@@ -13,8 +13,8 @@ export default class ScoreManager {
         this.starPowerMultiplier = 2;
         // this.starPowerMeasureDuration = 4; // Star power last for 4 measures - 4*beats_per_measure beats
         // for now let's use star power that lasts for a fixed number of notes, it's simple for now
-        this.starPowerMeasureDuration = 4;
-        this.starPowerCurrentMeasureCount = 0;
+        this.starPowerMeasureDuration = 1;
+        this.starPowerCurrentTickCount = 0;
 
         this.regularNoteScore = 50;
 
@@ -65,13 +65,13 @@ export default class ScoreManager {
     activateStarPower() {
         console.log("STAR POWER ACTIVATED")
         this.starPower = true;
-        this.starPowerCurrentMeasureCount = 0;
+        this.starPowerCurrentTickCount = 0;
     }
 
     deactivateStarPower() {
         console.log("STAR POWER DEACTIVATED")
         this.starPower = false;
-        this.starPowerCurrentNoteCount = 0;
+        this.starPowerCurrentTickCount = 0;
     }
 
     // TODO: Think if implement accuracy or not

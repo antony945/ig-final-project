@@ -365,12 +365,12 @@ export default class NoteManager {
                     this.updateVisibleNotes();
 
                     // Update scoreManager star count duration
-                    if (this.currentTick.tickType == 'measure' && scoreManager.starPower) {
-                        console.log(scoreManager.starPowerCurrentMeasureCount)
-                        if (scoreManager.starPowerCurrentMeasureCount+1 == scoreManager.starPowerMeasureDuration) {
+                    if (scoreManager.starPower) {
+                        // console.log(scoreManager.starPowerCurrentTickCount);
+                        if (scoreManager.starPowerCurrentTickCount == scoreManager.starPowerMeasureDuration*this.ticksPerMeasure) {
                             scoreManager.deactivateStarPower();
                         } else {
-                            scoreManager.starPowerCurrentMeasureCount++;
+                            scoreManager.starPowerCurrentTickCount++;
                         }
                     }
 
