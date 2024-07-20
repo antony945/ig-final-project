@@ -108,7 +108,7 @@ export default class AudioManager {
     }
 
     playMainSong() {
-        console.log("HEREEEEEE")
+        console.log("Stared main song here...")
 
         if (this.mainSong.isPlaying) return;
         this.mainSong.play();

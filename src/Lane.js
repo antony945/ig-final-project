@@ -2,9 +2,11 @@ import * as THREE from 'three';
 import Note from './Note.js';
 
 export default class Lane {
-    static lane_z = 0.00; // TODO: This breaks collision if 0.01
+    static radius = 0.015;
+    static nickelColor = 0xb0b0b0; // 0xeeeeee
+    static steelColor = 0x9a9a9a // 0xaaaaaa
 
-    constructor(laneIndex, laneWidth, laneHeight, laneZ, fretboardWidth, pickupHeight, pickupOffset, colors) {
+    constructor(laneIndex, laneWidth, laneHeight, laneZ, fretboardWidth, pickupHeight, holeRadius) {
         this.laneIndex = laneIndex;
         this.laneWidth = laneWidth;
         this.laneHeight = laneHeight;
@@ -15,83 +17,61 @@ export default class Lane {
         
         // Points defining lane
         this.p1 = new THREE.Vector3(0, this.laneHeight / 2, 0);
-        this.p2 = new THREE.Vector3(0, -this.laneHeight / 2 + (1.5*pickupHeight + pickupOffset), 0);
+        this.p2 = new THREE.Vector3(0, -this.laneHeight / 2 + (1.5*pickupHeight + holeRadius), 0);
         
         this.x = -(fretboardWidth/2) + (this.laneWidth / 2) + this.laneIndex * this.laneWidth
         this.z = laneZ;
-        this.radius = 0.015;
-        this.isMetallic = true;
+        // this.isMetallic = true;
 
-        this.mesh = this.createCylinderLane(this.isMetallic, this.p1, this.p2, this.radius);
+        // Nickel string
+        this.nickelMaterial = new THREE.MeshStandardMaterial({
+            color: 0xeeeeee,
+            metalness: 0.9,
+            roughness: 0.3
+        });
+
+        // Steel string
+        this.steelMaterial = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            metalness: 0.0,
+            roughness: 0.8
+        });
+
+        // Generate string
+        this.mesh = this.createCylinderLane(this.nickelMaterial, this.p1, this.p2, Lane.radius);
         
         this.mesh.position.x = this.x;
         this.mesh.position.z = this.z;
     }
 
-    // Not used
-    createPlaneLane() {
-        this.geometry = new THREE.PlaneGeometry(this.laneWidth, this.laneHeight);
-        this.material = new THREE.MeshBasicMaterial({ color: Lane.colors[this.laneIndex], wireframe: false }); // Adjust color as needed
-        this.mesh = new THREE.Mesh(this.geometry, this.material);
-        this.mesh.position.set(
-            this.x,
-            0,
-            0
-        )
+    generateNoiseTexture(noise, size) {
+        const data = new Uint8Array(size * size);
+        for (let i = 0; i < size * size; i++) {
+            data[i] = (noise.simplex2(i / size, i % size) * 128 + 128) | 0;
+        }
+        const texture = new THREE.DataTexture(data, size, size, THREE.LuminanceFormat);
+        texture.needsUpdate = true;
+        return texture;
     }
 
-    // Not used
-    createLineLane(isMetallic) {
-        if (isMetallic) {
-            this.color = 0xaaaaaa;
-        } else {
-            this.color = 0xffffff;
-        }
-
-        this.material = new THREE.LineBasicMaterial({ color: this.color });
-        this.points = [];
-
-        // Top point
-        this.points.push(
-            new THREE.Vector3(
-                this.x,
-                this.laneHeight / 2,
-                0
-            )
-        );
-
-        // Bottom point
-        this.points.push(
-            new THREE.Vector3(
-                this.x,
-                -this.laneHeight / 2,
-                0
-            )
-        );
-
-        this.geometry = new THREE.BufferGeometry().setFromPoints(this.points);
-        this.mesh = new THREE.Line(this.geometry, this.material);
-    }
-
-    createCylinderLane(isMetallic, p1, p2, radius) {
-        if (isMetallic) {
-            this.color = 0xaaaaaa;
-            this.metalness = 0.9;
-            this.roughness = 0.3;
-        } else {
-            this.color = 0xeeeeee;
-            this.metalness = 0.0;
-            this.roughness = 0.8;
-        }
-
+    createCylinderLane(material, p1, p2, radius, noise) {
+        // if (isMetallic) {
+        //     this.color = Lane.nickelColor;
+        //     this.metalness = 0.9;
+        //     this.roughness = 0.3;
+        // } else {
+        //     this.color = Lane.steelColor;
+        //     this.metalness = 0.0;
+        //     this.roughness = 0.8;
+        // }
         // Create a material for strings
-        this.material = new THREE.MeshStandardMaterial({
-            color: this.color,
-            metalness: this.metalness,
-            roughness: this.roughness
-        });
-
-        this.geometry = new THREE.CylinderGeometry(radius, radius, p1.distanceTo(p2), 32);
+        // this.material = new THREE.MeshStandardMaterial({
+        //     color: this.color,
+        //     metalness: this.metalness,
+        //     roughness: this.roughness
+        // });
+        this.material = material;
+        this.geometry = new THREE.CylinderGeometry(radius, radius, p1.distanceTo(p2), 32);        
         return new THREE.Mesh(this.geometry, this.material);
     }
 

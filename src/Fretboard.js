@@ -2,15 +2,17 @@ import * as THREE from 'three';
 import Lane from './Lane.js';
 import * as Utils from './utils.js'; // Adjust the path as necessary
 import particleFire from 'three-particle-fire';
+import { mx_bilerp_0 } from 'three/examples/jsm/nodes/materialx/lib/mx_noise.js';
 
 export default class Fretboard {
     static fretboardZ = -0.01;
-    static laneZ = 0.1;
+    static laneZ = 0.3;
     static pickupZ = 0.00;
     static pressEffectHeight = 0.01;
     static fireEffectParticleCount = 400;
     static fireEffectHeight = 1.00;
     static fireEffectColor = 0xff2200; // 0xaa4203
+    static coneRadiusFactor = 1.2;
     static colors = {
         0: 0x00ff00,
         1: 0xff0000,
@@ -92,11 +94,13 @@ export default class Fretboard {
     createLanes(fretboardWidth, fretboardHeight, pickupHeight, pickupOffset) {
         this.laneWidth = fretboardWidth / this.numLanes; // Width of each lane
         this.laneHeight = fretboardHeight;
+        this.holeRadius = this.laneWidth / 4; // Radius of holes for notes
+        this.holeDistance = this.laneWidth; // Distance between holes (aligned with lanes)
 
         // Create lanes
         this.lanes = [];
         for (let i = 0; i < this.numLanes; i++) {
-            const lane = new Lane(i, this.laneWidth, this.laneHeight, Fretboard.laneZ, fretboardWidth, pickupHeight, pickupOffset, Fretboard.colors);
+            const lane = new Lane(i, this.laneWidth, this.laneHeight, Fretboard.laneZ, fretboardWidth, pickupHeight, this.holeRadius*Fretboard.coneRadiusFactor);
             
             // TODO: Think if it is better to attach Lanes to Fretboard or not
             this.mesh.add(lane.mesh);
@@ -116,8 +120,6 @@ export default class Fretboard {
         );
 
         // Pickup holes
-        this.holeRadius = laneWidth / 4; // Radius of holes for notes
-        this.holeDistance = laneWidth; // Distance between holes (aligned with lanes)
         // this.holeMeshes = this.createPickupHoles(
         //     this.pickupWidth,
         //     this.holeRadius,
@@ -126,9 +128,10 @@ export default class Fretboard {
         //     0.0     // relative z position
         // );
 
+        const coneMaterial = new THREE.MeshStandardMaterial({ color: 0x000000, opacity: 0.8, transparent: true });
         const baseMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
         const domeInnerMaterial = new THREE.MeshStandardMaterial({ color: 0xe8e8ee, side: THREE.DoubleSide });
-        const domeMaterial = new THREE.MeshStandardMaterial({ color: 0x000000, opacity: 1.0, transparent: true });
+        const domeMaterial = new THREE.MeshStandardMaterial({ color: 0x000000, opacity: 0.9, transparent: true });
         this.domeMeshName = "top_dome";
 
         this.holeMeshes = this.createPickupHoles(
@@ -137,6 +140,7 @@ export default class Fretboard {
             this.holeDistance,
             // 0.2,    // opacity
             0.0,     // relative z position
+            coneMaterial,
             baseMaterial,
             domeInnerMaterial,
             domeMaterial,
@@ -221,7 +225,47 @@ export default class Fretboard {
 
     // --------------------------------------------------------------
 
-    createPickupHoles(pickupWidth, holeRadius, holeDistance, relativeZ, baseMaterial, domeInnerMaterial, domeMaterial, domeMeshName) {
+    createPickupCone(coneRadius, coneHeight, offsetZ, coneMaterial) {
+        // Create a custom geometry
+        const customConeGeometry = new THREE.BufferGeometry();
+    
+        // Define vertices
+        const vertices = [];
+        const segments = 32; // Number of segments for the base of the cone
+    
+        // Base vertices
+        const thetaStart = Math.PI;
+        const thetaLength = Math.PI;
+
+        for (let i = 0; i <= segments; i++) {
+            const theta = thetaStart + (i * thetaLength) / segments;
+            vertices.push(coneRadius * Math.cos(theta), 0, coneRadius * Math.sin(theta));
+        }
+    
+        // Top vertex
+        const topVertexIndex = vertices.length / 3;
+        vertices.push(0, coneHeight+Lane.radius, -offsetZ);
+    
+        // Define faces (triangles)
+        const indices = [];
+        for (let i = 0; i < segments; i++) {
+            indices.push(i, (i + 1) % segments, topVertexIndex);
+        }
+    
+        // Convert vertices and indices to BufferAttributes and set them to geometry
+        customConeGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        customConeGeometry.setIndex(indices);
+        customConeGeometry.computeVertexNormals();
+    
+        // Create a mesh
+        // coneMaterial.wireframe = true;
+        const customConeMesh = new THREE.Mesh(customConeGeometry, coneMaterial);
+        customConeMesh.rotation.x = Math.PI;
+    
+        return customConeMesh;
+    }
+
+    createPickupHoles(pickupWidth, holeRadius, holeDistance, relativeZ, coneMaterial, baseMaterial, domeInnerMaterial, domeMaterial, domeMeshName) {
         const buttons = [];
     
         for (let i = 0; i < this.numLanes; i++) {
@@ -230,6 +274,15 @@ export default class Fretboard {
             // Change baseMaterial color
             const material = baseMaterial.clone();
             material.color.setHex(Fretboard.colors[i])
+
+            // Link hole-string
+            const coneHeight = Fretboard.laneZ;
+            const coneMesh = this.createPickupCone(holeRadius*Fretboard.coneRadiusFactor, coneHeight, holeRadius, coneMaterial);
+            // const coneGeometry = new THREE.ConeGeometry(, coneHeight, 32, 1, true, Math.PI/2, Math.PI)
+            // const coneMesh = new THREE.Mesh(coneGeometry, coneMaterial)
+            coneMesh.rotation.x = Math.PI / 2;
+            // coneMesh.position.z += coneHeight / 2;
+            group.add(coneMesh);
 
             // Base Ring
             const ringGeometry = new THREE.TorusGeometry(holeRadius, 0.02, 16, 100);
@@ -269,6 +322,8 @@ export default class Fretboard {
     
         return buttons;
     }
+
+    
     
     // createPressEffect(numLanes, baseMaterial, domeMaterial, innerMaterial) {
     //     const buttons = [];

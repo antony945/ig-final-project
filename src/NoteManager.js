@@ -344,9 +344,9 @@ export default class NoteManager {
         // console.log(this.totalTickCounter)
         // console.log(this.currentTick);
 
-        this.tickSpeed = this.speed/fps;
+        this.tickSpeed = this.speed/60;
         // TODO: Comment
-        this.tickSpeed = 0;
+        // this.tickSpeed = 0;
         // console.log(this.tickSpeed)
 
         // Initialize current tick
