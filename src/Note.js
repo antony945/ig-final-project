@@ -27,7 +27,8 @@ export default class Note {
         this.sideMaterial = new THREE.MeshStandardMaterial({
             color: 0xffffff,
             metalness: 0.2,
-            roughness: 0.6
+            roughness: 0.6,
+            side: THREE.DoubleSide
         });
         // this.mainMaterialStarPower = this.createStarPowerMaterial();
         
@@ -53,14 +54,16 @@ export default class Note {
             metalness: 0.6,  // metallic
             roughness: 0.4,   // Slightly smooth for a reflecstive look
             name: "regular_"+this.color,
-            wireframe: false
+            wireframe: false,
+            side: THREE.DoubleSide
         });
     }
 
     createStarPowerMaterial() {
         return new THREE.MeshNormalMaterial({
             name: "starPower",
-            wireframe: false
+            wireframe: false,
+            side: THREE.DoubleSide
         });
     }
 

@@ -64,7 +64,7 @@ export default class Fretboard {
             color: 0x000000,
             transparent: true,
             // side: THREE.DoubleSide,
-            opacity: 0.3
+            opacity: 0.2
         });
         this.darkOverlayMesh = new THREE.Mesh(this.geometry, this.darkOverlayMaterial);
         // this.mesh.add(this.darkOverlayMesh); // Add the overlay to the fretboard
@@ -118,21 +118,37 @@ export default class Fretboard {
         // Pickup holes
         this.holeRadius = laneWidth / 4; // Radius of holes for notes
         this.holeDistance = laneWidth; // Distance between holes (aligned with lanes)
+        // this.holeMeshes = this.createPickupHoles(
+        //     this.pickupWidth,
+        //     this.holeRadius,
+        //     this.holeDistance,
+        //     0.2,    // opacity
+        //     0.0     // relative z position
+        // );
+
+        const baseMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        const domeInnerMaterial = new THREE.MeshStandardMaterial({ color: 0xe8e8ee, side: THREE.DoubleSide });
+        const domeMaterial = new THREE.MeshStandardMaterial({ color: 0x000000, opacity: 1.0, transparent: true });
+        this.domeMeshName = "top_dome";
+
         this.holeMeshes = this.createPickupHoles(
             this.pickupWidth,
             this.holeRadius,
             this.holeDistance,
-            0.2,    // opacity
-            0.0     // relative z position
+            // 0.2,    // opacity
+            0.0,     // relative z position
+            baseMaterial,
+            domeInnerMaterial,
+            domeMaterial,
+            this.domeMeshName
         );
     
         // Press effects
         this.pressEffects = this.createPressEffects(
-            this.holeRadius,
+            this.holeRadius*1,
             Fretboard.pressEffectHeight,
-            8,
-            0.3,     // opacity
-            0.0
+            32,
+            0.5     // opacity
         );
 
         // Fire effects
@@ -172,36 +188,157 @@ export default class Fretboard {
         pickupAreaMesh.position.z = relativeZ;
 
         // Don't make it visible
-        pickupAreaMesh.visible = true;
+        pickupAreaMesh.visible = false;
         return pickupAreaMesh;
     }
 
     // TODO: Recreate them in a better way
-    createPickupHoles(pickupWidth, holeRadius, holeDistance, opacity, relativeZ) {
-        // const holeGeometry = new THREE.SphereGeometry(this.holeRadius, 16, 16, -Math.PI, Math.PI);
-        // const holeGeometry = new THREE.RingGeometry(0.1, this.holeRadius, 8);
-        const holeGeometry = new THREE.TorusGeometry(holeRadius, 0.05, 8, 8 );
+    // createPickupHoles(pickupWidth, holeRadius, holeDistance, opacity, relativeZ) {
+    //     // const holeGeometry = new THREE.SphereGeometry(this.holeRadius, 16, 16, -Math.PI, Math.PI);
+    //     // const holeGeometry = new THREE.RingGeometry(0.1, this.holeRadius, 8);
+    //     const holeGeometry = new THREE.TorusGeometry(holeRadius, 0.05, 8, 8 );
 
-        const holeMeshes = [];
+    //     const holeMeshes = [];
+    //     for (let i = 0; i < this.numLanes; i++) {
+    //         const holeMaterial = new THREE.MeshStandardMaterial({
+    //             color: Fretboard.colors[i],
+    //             transparent: true,
+    //             opacity: opacity,
+    //             side: THREE.DoubleSide,
+    //             wireframe: false
+    //         });
+    //         const holeMesh = new THREE.Mesh(holeGeometry, holeMaterial);
+            
+    //         // Adjust hole position based on lane
+    //         holeMesh.position.x = -(pickupWidth / 2) + (i + 0.5) * holeDistance;
+    //         holeMesh.position.z = relativeZ;
+            
+    //         // Store hole meshes
+    //         holeMeshes.push(holeMesh);
+    //     }
+    //     return holeMeshes;
+    // }
+
+    // --------------------------------------------------------------
+
+    createPickupHoles(pickupWidth, holeRadius, holeDistance, relativeZ, baseMaterial, domeInnerMaterial, domeMaterial, domeMeshName) {
+        const buttons = [];
+    
         for (let i = 0; i < this.numLanes; i++) {
-            const holeMaterial = new THREE.MeshStandardMaterial({
-                color: Fretboard.colors[i],
-                transparent: true,
-                opacity: opacity,
-                side: THREE.DoubleSide,
-                wireframe: false
-            });
-            const holeMesh = new THREE.Mesh(holeGeometry, holeMaterial);
+            const group = new THREE.Group();
+
+            // Change baseMaterial color
+            const material = baseMaterial.clone();
+            material.color.setHex(Fretboard.colors[i])
+
+            // Base Ring
+            const ringGeometry = new THREE.TorusGeometry(holeRadius, 0.02, 16, 100);
+            const ringMesh = new THREE.Mesh(ringGeometry, material);
+            // ringMesh.rotation.x = Math.PI / 2;
+            group.add(ringMesh);
+
+            // Inner upside down dome
+            const domeInnerGeometry = new THREE.SphereGeometry(2.25*holeRadius, 32, 16, 0, Math.PI * 2, Math.PI/16, Math.PI/14);
+            const domeInnerMesh = new THREE.Mesh(domeInnerGeometry, domeInnerMaterial);
+            domeInnerMesh.rotation.x = -Math.PI / 2;
+            domeInnerMesh.position.z = 2.25*holeRadius-holeRadius/8;
+            group.add(domeInnerMesh);
+
+            // Inner colored normal dome
+            const domeInnerGeometry2 = new THREE.SphereGeometry(1.8*holeRadius, 32, 16, 0, Math.PI * 2, Math.PI/10, Math.PI/14);
+            const domeInnerMesh2 = new THREE.Mesh(domeInnerGeometry2, material);
+            domeInnerMesh2.rotation.x = +Math.PI / 2;
+            domeInnerMesh2.position.z = -1.8*holeRadius+holeRadius/6;
+            group.add(domeInnerMesh2);
+    
+            // Black Dome
+            const domeGeometry = new THREE.SphereGeometry(1.8*holeRadius, 32, 16, 0, Math.PI * 2, 0, Math.PI/10);
+            const myDomeMaterial = domeMaterial.clone();
+            const domeMesh = new THREE.Mesh(domeGeometry, myDomeMaterial);
+            domeMesh.rotation.x = Math.PI / 2;
+            domeMesh.position.z = -1.8*holeRadius+holeRadius/6;
+            domeMesh.name = domeMeshName;
+            group.add(domeMesh);
+    
+            // Adjust the position based on the lane
+            group.position.x = -(pickupWidth / 2) + (i + 0.5) * holeDistance;
+            group.position.z = relativeZ;
             
-            // Adjust hole position based on lane
-            holeMesh.position.x = -(pickupWidth / 2) + (i + 0.5) * holeDistance;
-            holeMesh.position.z = relativeZ;
-            
-            // Store hole meshes
-            holeMeshes.push(holeMesh);
+            buttons.push(group);
         }
-        return holeMeshes;
+    
+        return buttons;
     }
+    
+    // createPressEffect(numLanes, baseMaterial, domeMaterial, innerMaterial) {
+    //     const buttons = [];
+    
+    //     for (let i = 0; i < numLanes; i++) {
+    //         const group = new THREE.Group();
+    
+    //         // Base Ring
+    //         const ringGeometry = new THREE.TorusGeometry(1, 0.2, 16, 100);
+    //         const ringMesh = new THREE.Mesh(ringGeometry, baseMaterial);
+    //         ringMesh.rotation.x = Math.PI / 2;
+    //         group.add(ringMesh);
+    
+    //         // Dome
+    //         const domeGeometry = new THREE.SphereGeometry(0.8, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+    //         const domeMesh = new THREE.Mesh(domeGeometry, domeMaterial);
+    //         domeMesh.position.y = 0.4;
+    //         group.add(domeMesh);
+    
+    //         // Inner Disk
+    //         const innerDiskGeometry = new THREE.CylinderGeometry(0.7, 0.7, 0.1, 32);
+    //         const innerDiskMesh = new THREE.Mesh(innerDiskGeometry, innerMaterial);
+    //         innerDiskMesh.position.y = 0.1;
+    //         group.add(innerDiskMesh);
+    
+    //         group.position.x = i * 3; // Adjust the position based on the lane
+    //         buttons.push(group);
+    //     }
+    
+    //     return buttons;
+    // }
+    
+    // createStrumEffect(numLanes, baseMaterial, domeMaterial, innerMaterial) {
+    //     const buttons = [];
+    
+    //     for (let i = 0; i < numLanes; i++) {
+    //         const group = new THREE.Group();
+    
+    //         // Base Ring
+    //         const ringGeometry = new THREE.TorusGeometry(1, 0.2, 16, 100);
+    //         const ringMesh = new THREE.Mesh(ringGeometry, baseMaterial);
+    //         ringMesh.rotation.x = Math.PI / 2;
+    //         group.add(ringMesh);
+    
+    //         // Dome
+    //         const domeGeometry = new THREE.SphereGeometry(0.8, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+    //         const domeMesh = new THREE.Mesh(domeGeometry, domeMaterial);
+    //         domeMesh.position.y = 0.4;
+    //         group.add(domeMesh);
+    
+    //         // Cylinder
+    //         const cylinderGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.5, 32);
+    //         const cylinderMesh = new THREE.Mesh(cylinderGeometry, baseMaterial);
+    //         cylinderMesh.position.y = -0.25;
+    //         group.add(cylinderMesh);
+    
+    //         // Inner Disk
+    //         const innerDiskGeometry = new THREE.CylinderGeometry(0.7, 0.7, 0.1, 32);
+    //         const innerDiskMesh = new THREE.Mesh(innerDiskGeometry, innerMaterial);
+    //         innerDiskMesh.position.y = 0.1;
+    //         group.add(innerDiskMesh);
+    
+    //         group.position.x = i * 3; // Adjust the position based on the lane
+    //         buttons.push(group);
+    //     }
+    
+    //     return buttons;
+    // }
+
+    // -------------------------------------------------------
 
     // TODO: Check them
     createFireEffects(fireRadius, fireHeight, particleCount, fireColor) {
@@ -274,13 +411,19 @@ export default class Fretboard {
     }
 
     enablePressEffect(laneIndex) {
-        // Right now just put visibility to true
+        // Put visibility to true
         this.pressEffects[laneIndex].visible = true;
+        // Lower opacity of the top black dome
+        this.holeMeshes[laneIndex].getObjectByName(this.domeMeshName).material.color.setHex(Fretboard.colors[laneIndex])
+        // this.holeMeshes[laneIndex].getObjectByName(this.domeMeshName).material.opacity = 1.0
     }
 
     disablePressEffect(laneIndex) {
         // Return visibility to false
         this.pressEffects[laneIndex].visible = false;
+        // Return opacity to 1
+        this.holeMeshes[laneIndex].getObjectByName(this.domeMeshName).material.color.setHex(0x000000)
+        // this.holeMeshes[laneIndex].getObjectByName(this.domeMeshName).material.opacity = 1
     }
 
     // -------------------------------------------------------------------------------------------------------------------------
