@@ -22,8 +22,43 @@ export default class GameManager {
         // this.addFog();
         
         // Create fretboard
-        // this.setupFretboard(5, 15, 'textures/fretboard.jpg', 5)
-        this.setupFretboard(5, 15, 'textures/GH2_beta-Metal.png', 5)
+        const fretboardTextures = [
+            // 'textures/fretboard/Cracked.jpg',
+            // 'textures/fretboard/electric.jpg',
+            // 'textures/fretboard/FatTony-Fretboard.jpg',
+            // 'textures/fretboard/FlowerPower.jpg',
+            // 'textures/fretboard/GH2_beta-Alternative.png',
+            // 'textures/fretboard/GH2_beta-Grim.png',
+            // 'textures/fretboard/GH2_beta-Metal.png',
+            // 'textures/fretboard/GH2_beta-Punk.png',
+            // 'textures/fretboard/Metallic.jpg',
+            // 'textures/fretboard/Overdose.jpg',
+            // 'textures/fretboard/Pink_Border.jpg',
+            // 'textures/fretboard/pnklzr.jpg',
+            // 'textures/fretboard/Rainbow_Border.png',
+            // 'textures/fretboard/RoyalCarpet.jpg',
+            // 'textures/fretboard/smokehero.jpg',
+            // 'textures/fretboard/Transparent.png',
+            // 'textures/fretboard/Velocity.jpg',
+            // 'textures/fretboard/VelocityColor.jpg'
+            'textures/fretboard/GH_3/GH3_Elroy.png',
+            'textures/fretboard/GH_3/GH3_PC-Axel.png',
+            'textures/fretboard/GH_3/GH3_PC-Casey.png',
+            'textures/fretboard/GH_3/GH3_PC-Izzy.png',
+            'textures/fretboard/GH_3/GH3_PC-Johnny.png',
+            'textures/fretboard/GH_3/GH3_PC-Judy.png',
+            'textures/fretboard/GH_3/GH3_PC-Lars.png',
+            'textures/fretboard/GH_3/GH3_PC-Midori.png',
+            'textures/fretboard/GH_3/GH3_PC-Morello.png',
+            'textures/fretboard/GH_3/GH3_PC-Ripper.png',
+            'textures/fretboard/GH_3/GH3_PC-Rock_God.png',
+            'textures/fretboard/GH_3/GH3_PC-Satan.png',
+            'textures/fretboard/GH_3/GH3_PC-Slash.png',
+            'textures/fretboard/GH_3/GH3_PC-Xavier.png',
+            'textures/fretboard/GH_3/GH3_PS2-Robot.png',
+        ];
+        const randomIndex = Math.floor(Math.random() * fretboardTextures.length);
+        this.setupFretboard(5, 15, fretboardTextures[randomIndex], 5)
 
         // Handle window resize
         window.addEventListener('resize', () => {

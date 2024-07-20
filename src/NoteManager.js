@@ -366,7 +366,7 @@ export default class NoteManager {
 
                     // Update scoreManager star count duration
                     if (this.currentTick.tickType == 'measure' && scoreManager.starPower) {
-                        // console.log(scoreManager.starPowerCurrentMeasureCount)
+                        console.log(scoreManager.starPowerCurrentMeasureCount)
                         if (scoreManager.starPowerCurrentMeasureCount+1 == scoreManager.starPowerMeasureDuration) {
                             scoreManager.deactivateStarPower();
                         } else {

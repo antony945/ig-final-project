@@ -13,7 +13,7 @@ export default class ScoreManager {
         this.starPowerMultiplier = 2;
         // this.starPowerMeasureDuration = 4; // Star power last for 4 measures - 4*beats_per_measure beats
         // for now let's use star power that lasts for a fixed number of notes, it's simple for now
-        this.starPowerMeasureDuration = 2;
+        this.starPowerMeasureDuration = 4;
         this.starPowerCurrentMeasureCount = 0;
 
         this.regularNoteScore = 50;

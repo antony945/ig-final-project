@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import Lane from './Lane.js';
 import * as Utils from './utils.js'; // Adjust the path as necessary
 import particleFire from 'three-particle-fire';
-import { mx_bilerp_0 } from 'three/examples/jsm/nodes/materialx/lib/mx_noise.js';
 
 export default class Fretboard {
     static fretboardZ = -0.01;
@@ -79,7 +78,7 @@ export default class Fretboard {
         // Group
         this.mesh = new THREE.Object3D()
         this.mesh.add(this.fretboardMesh)
-        this.mesh.add(this.darkOverlayMesh)
+        // this.mesh.add(this.darkOverlayMesh)
         this.mesh.add(this.borderMesh)
 
         // Position the border correctly
@@ -119,15 +118,6 @@ export default class Fretboard {
             0.0 // relative z position
         );
 
-        // Pickup holes
-        // this.holeMeshes = this.createPickupHoles(
-        //     this.pickupWidth,
-        //     this.holeRadius,
-        //     this.holeDistance,
-        //     0.2,    // opacity
-        //     0.0     // relative z position
-        // );
-
         const coneMaterial = new THREE.MeshStandardMaterial({ color: 0x000000, opacity: 0.8, transparent: true });
         const baseMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
         const domeInnerMaterial = new THREE.MeshStandardMaterial({ color: 0xe8e8ee, side: THREE.DoubleSide });
@@ -138,7 +128,6 @@ export default class Fretboard {
             this.pickupWidth,
             this.holeRadius,
             this.holeDistance,
-            // 0.2,    // opacity
             0.0,     // relative z position
             coneMaterial,
             baseMaterial,
@@ -179,7 +168,6 @@ export default class Fretboard {
         this.mesh.add(this.pickupMesh);
     }
 
-    // TODO: Recreate it in a better way
     createPickupArea(pickupWidth, pickupHeight, color, opacity, relativeZ) {
         // Create a plane geometry for the pickup area
         const geometry = new THREE.PlaneGeometry(pickupWidth, pickupHeight);
@@ -195,35 +183,6 @@ export default class Fretboard {
         pickupAreaMesh.visible = false;
         return pickupAreaMesh;
     }
-
-    // TODO: Recreate them in a better way
-    // createPickupHoles(pickupWidth, holeRadius, holeDistance, opacity, relativeZ) {
-    //     // const holeGeometry = new THREE.SphereGeometry(this.holeRadius, 16, 16, -Math.PI, Math.PI);
-    //     // const holeGeometry = new THREE.RingGeometry(0.1, this.holeRadius, 8);
-    //     const holeGeometry = new THREE.TorusGeometry(holeRadius, 0.05, 8, 8 );
-
-    //     const holeMeshes = [];
-    //     for (let i = 0; i < this.numLanes; i++) {
-    //         const holeMaterial = new THREE.MeshStandardMaterial({
-    //             color: Fretboard.colors[i],
-    //             transparent: true,
-    //             opacity: opacity,
-    //             side: THREE.DoubleSide,
-    //             wireframe: false
-    //         });
-    //         const holeMesh = new THREE.Mesh(holeGeometry, holeMaterial);
-            
-    //         // Adjust hole position based on lane
-    //         holeMesh.position.x = -(pickupWidth / 2) + (i + 0.5) * holeDistance;
-    //         holeMesh.position.z = relativeZ;
-            
-    //         // Store hole meshes
-    //         holeMeshes.push(holeMesh);
-    //     }
-    //     return holeMeshes;
-    // }
-
-    // --------------------------------------------------------------
 
     createPickupCone(coneRadius, coneHeight, offsetZ, coneMaterial) {
         // Create a custom geometry
@@ -322,80 +281,7 @@ export default class Fretboard {
     
         return buttons;
     }
-
     
-    
-    // createPressEffect(numLanes, baseMaterial, domeMaterial, innerMaterial) {
-    //     const buttons = [];
-    
-    //     for (let i = 0; i < numLanes; i++) {
-    //         const group = new THREE.Group();
-    
-    //         // Base Ring
-    //         const ringGeometry = new THREE.TorusGeometry(1, 0.2, 16, 100);
-    //         const ringMesh = new THREE.Mesh(ringGeometry, baseMaterial);
-    //         ringMesh.rotation.x = Math.PI / 2;
-    //         group.add(ringMesh);
-    
-    //         // Dome
-    //         const domeGeometry = new THREE.SphereGeometry(0.8, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
-    //         const domeMesh = new THREE.Mesh(domeGeometry, domeMaterial);
-    //         domeMesh.position.y = 0.4;
-    //         group.add(domeMesh);
-    
-    //         // Inner Disk
-    //         const innerDiskGeometry = new THREE.CylinderGeometry(0.7, 0.7, 0.1, 32);
-    //         const innerDiskMesh = new THREE.Mesh(innerDiskGeometry, innerMaterial);
-    //         innerDiskMesh.position.y = 0.1;
-    //         group.add(innerDiskMesh);
-    
-    //         group.position.x = i * 3; // Adjust the position based on the lane
-    //         buttons.push(group);
-    //     }
-    
-    //     return buttons;
-    // }
-    
-    // createStrumEffect(numLanes, baseMaterial, domeMaterial, innerMaterial) {
-    //     const buttons = [];
-    
-    //     for (let i = 0; i < numLanes; i++) {
-    //         const group = new THREE.Group();
-    
-    //         // Base Ring
-    //         const ringGeometry = new THREE.TorusGeometry(1, 0.2, 16, 100);
-    //         const ringMesh = new THREE.Mesh(ringGeometry, baseMaterial);
-    //         ringMesh.rotation.x = Math.PI / 2;
-    //         group.add(ringMesh);
-    
-    //         // Dome
-    //         const domeGeometry = new THREE.SphereGeometry(0.8, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
-    //         const domeMesh = new THREE.Mesh(domeGeometry, domeMaterial);
-    //         domeMesh.position.y = 0.4;
-    //         group.add(domeMesh);
-    
-    //         // Cylinder
-    //         const cylinderGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.5, 32);
-    //         const cylinderMesh = new THREE.Mesh(cylinderGeometry, baseMaterial);
-    //         cylinderMesh.position.y = -0.25;
-    //         group.add(cylinderMesh);
-    
-    //         // Inner Disk
-    //         const innerDiskGeometry = new THREE.CylinderGeometry(0.7, 0.7, 0.1, 32);
-    //         const innerDiskMesh = new THREE.Mesh(innerDiskGeometry, innerMaterial);
-    //         innerDiskMesh.position.y = 0.1;
-    //         group.add(innerDiskMesh);
-    
-    //         group.position.x = i * 3; // Adjust the position based on the lane
-    //         buttons.push(group);
-    //     }
-    
-    //     return buttons;
-    // }
-
-    // -------------------------------------------------------
-
-    // TODO: Check them
     createFireEffects(fireRadius, fireHeight, particleCount, fireColor) {
         const height = window.innerHeight;
 
@@ -444,7 +330,6 @@ export default class Fretboard {
         });
     }
 
-    // TODO: Check them
     createPressEffects(holeRadius, pressEffectHeight, radialSegments, opacity) {
         const pressEffects = [];
 
@@ -485,8 +370,6 @@ export default class Fretboard {
 
     addToScene(scene) {
         scene.add(this.mesh);
-        // TODO: Comment this line if you decide to have Lanes as childrens of Fretboard
-        // this.lanes.forEach(lane => lane.addToScene(scene));
     }
 
     updatePressAnimations(pressedLanesIndices) {
