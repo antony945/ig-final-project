@@ -18,8 +18,13 @@ export default class GameManager {
         // Create scene, camera, renderer, controls, lights
         this.init();
         this.scene.background = new THREE.Color( 0x000000 );
+
+        // Initialize Stats.js
+        this.setupStats();
         
-        // this.addFog();
+        // Initialize GUI
+        this.setupGUI();
+        
         
         // Create fretboard
         const fretboardTextures = [
@@ -78,29 +83,23 @@ export default class GameManager {
         // this.setupAudioManager('songs/s0/take_me_out.mp3', 'songs/s0/song.ini');
         // this.setupAudioManager('songs/s0/take_me_out.mp3', 'songs/s0/song.ini');
         this.setupAudioManager('songs/s1');
-        const bgImgPath = 'bg/album.jpg'
+        
+        
+        // Initialize background
+        const bgImgPath = 'bg/image_less_blur.png'
+        // const bgImgPath = 'songs/s1/album.jpg'
         const bgVideoPath = 'bg/video480.mp4'
         // const bgVideoPath = 'GHL_Crowd_Emotions/GHL_happy_blue.mp4';
-        // const bgImgPath = 'songs/s1/album.jpg'
-
-        
-        // Initialize Stats.js
-        this.setupStats();
-        
-        // Initialize GUI
-        this.setupGUI();
+        this.setupBackgroundManager(bgVideoPath, bgImgPath, false);
         
         // Add lights
         this.setupLightManager(this.gui);
-
-        // Initialize helpers
-        // this.setupHelpers();
 
         // Initialize score
         this.setupScoreManager();
 
         // CameraShake
-        this.cameraShake = new CameraShake();
+        // this.cameraShake = new CameraShake();
         this.screenShake = Utils.ScreenShake();
 
         // Initialize input
@@ -110,9 +109,6 @@ export default class GameManager {
         this.isPaused = false;
         // Add pause overlay
         this.createPauseOverlay();
-
-        // Initialize background
-        this.setupBackgroundManager(bgVideoPath, bgImgPath);
     }
 
     setupFretboard(width, height, textureFile, numLanes) {
@@ -134,8 +130,8 @@ export default class GameManager {
         this.scoreManager = new ScoreManager(this.fretboard, this.scene);
     }
 
-    setupBackgroundManager(bgVideoPath, bgImgPath) {
-        this.backgroundManager = new BackgroundManager(bgVideoPath, bgImgPath, this.scene, this.camera, this.gui, true);
+    setupBackgroundManager(bgVideoPath, bgImgPath, useVideo) {
+        this.backgroundManager = new BackgroundManager(bgVideoPath, bgImgPath, this.scene, this.camera, this.gui, useVideo);
     }
 
     togglePause() {
@@ -220,43 +216,10 @@ export default class GameManager {
             this.listener
         );
 
-        this.songProperties = this.audioManager.getSongProperties();
+        // this.songProperties = this.audioManager.getSongProperties();
         // console.log(this.songProperties)
         // this.initMusicPlayer(mainSongImgFile);
         // this.updateMusicPlayer(this.songProperties);
-    }
-
-    initMusicPlayer(img) {
-        // Create HTML elements for the music player
-        this.musicPlayer = document.createElement('div');
-        this.musicPlayer.id = 'music-player';
-        this.musicPlayer.style.display = 'none';
-        document.body.appendChild(this.musicPlayer);
-
-        this.songImage = document.createElement('img');
-        this.songImage.id = 'song-image';
-        this.songImage.src = img;
-        this.musicPlayer.appendChild(this.songImage);
-
-        this.songName = document.createElement('p');
-        this.songName.id = 'song-name';
-        this.musicPlayer.appendChild(this.songName);
-
-        // this.songDuration = document.createElement('p');
-        // this.songDuration.id = 'song-duration';
-        // this.musicPlayer.appendChild(this.songDuration);
-
-        // this.updateMusicPlayer();
-
-        // this.mainSong.onEnded(() => this.updateDuration());
-        // this.mainSong.onEnded(() => this.updateDuration());
-    }
-
-    updateMusicPlayer(songProperties) {
-        this.musicPlayer.style.display = 'block';
-        if (songProperties) {
-            this.songName.textContent = `${songProperties.name} - ${songProperties.artist}`;
-        }
     }
 
     init() {
@@ -319,26 +282,6 @@ export default class GameManager {
         cameraFolder.add(this.camera.rotation, 'x', 0, Math.PI).name('X Rotation');
         cameraFolder.close();
 
-        // Fretboard settings
-        const fretboardFolder = this.gui.addFolder('Fretboard');
-        fretboardFolder.addColor({ color: `#${this.fretboard.fretboardMesh.material.color.getHexString()}` }, 'color').onChange((color) => {
-            this.fretboard.fretboardMesh.material.color.set(color);
-        });
-        fretboardFolder.add(this.fretboard.fretboardMesh.material, 'opacity', 0, 1).name('Opacity').onChange((value) => {
-            this.fretboard.fretboardMesh.material.opacity = value;
-            this.fretboard.fretboardMesh.material.transparent = value < 1.0;
-        });
-        fretboardFolder.add(this.fretboard.fretboardMesh.material, 'transparent').name('Transparent').onChange((value) => {
-            this.fretboard.fretboardMesh.material.transparent = value;
-        });
-        fretboardFolder.add(this.fretboard.fretboardMesh.material, 'wireframe').name('Wireframe').onChange((value) => {
-            this.fretboard.fretboardMesh.material.wireframe = value;
-        });
-        // this.rotateX = 0;
-        fretboardFolder.add(this.fretboard.fretboardMesh.rotation, 'x', 0, Math.PI).name('X Rotation').onChange((value) => {
-            this.fretboard.rotate(value);
-        });
-        fretboardFolder.close();
         this.gui.close();
     }
 
@@ -378,21 +321,6 @@ export default class GameManager {
 
         //     this.scene.add(helper);
         // });
-    }
-
-    addFog() {
-        this.scene.fog = new THREE.FogExp2(0x01131e, 0.025);
-    }
-
-    updateLights() {
-        // Update spotlight position to simulate movement
-        const time = this.clock.getElapsedTime();
-        this.spotLight.position.x = Math.sin(time) * 10;
-        this.spotLight.position.z = Math.cos(time) * 10;
-
-        // Update the spotlight target to follow the note
-        this.spotLightTarget.position.x = Math.sin(time) * 5;
-        this.spotLightTarget.position.z = Math.cos(time) * 5;
     }
 
     shakeCamera() {
