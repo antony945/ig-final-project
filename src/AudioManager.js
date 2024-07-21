@@ -47,7 +47,7 @@ export default class AudioManager {
         const index = 2;
         this.scheduleTask(() => this.playSoundEffect('songStart', index, 0.5), 500);
         this.scheduleTask(() => this.playDefaultSoundEffect('crowdStart', 0.8), 1000);
-        this.scheduleTask(() => this.playMainSong(), (introMeasures)*measureDuration*1000);
+        this.scheduleTask(() => this.playMainSong(), (introMeasures)*measureDuration*1000-measureDuration/8*1000);
     }
 
     scheduleTask(callback, delay) {

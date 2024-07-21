@@ -249,62 +249,10 @@ export default class NoteManager {
         return this.allNotes[measure]
     }
 
-    // Not used
-    addNotesToScene(measure) {
-        this.allNotes[measure].forEach(note => note.addToScene(scene));
-    }
-
     addAllNotesToScene(scene) {
         // console.log(this.getAllNotes())
         this.getAllNotes().forEach(note => note.addToScene(scene));
     }
-
-    // Not used
-    hasToBeVisible(note) {
-        // has to be visible by checking its measure and tick
-        const currentTotalTick = this.currentMeasureCounter*this.ticksPerMeasure + this.currentTickCounter
-        const noteTotalTick = note.measure*this.ticksPerMeasure + note.tick
-
-        return noteTotalTick < (currentTotalTick+this.ticksPerMeasure)
-    }
-
-    // Not used
-    addNextNotesToScene(scene) {
-        // allNotes are ordered based on measure, break when you found some nodes having a bigger measure
-
-        for (this.allNotesIndex in this.allNotes) {
-            const note = this.allNotes[this.allNotesIndex];
-            if (this.hasToBeVisible(note)) {
-                note.addToScene(scene);
-                this.tickLines[note.tick].addNote(note);
-            } else {
-                break;
-            }
-        }
-
-        this.allNotes.forEach(note => {
-            note.addToScene(scene);
-        });
-    }
-
-    // addNoteToLanes(tick, isSpecial, ...laneIndexes) {
-    //     const addedNotes = [];
-
-    //     // Get tickLine
-    //     const currentTick = this.tickLines[tick]
-
-    //     // Create here the note and pass it to the tick
-    //     laneIndexes.forEach(laneIndex => {
-    //         const lane = this.fretboard.lanes[laneIndex];
-    //         const note = new Note(currentTick.tickIndex, laneIndex, lane.x, currentTick.mesh.position.y, lane.z, this.fretboard.laneWidth/4, this.fretboard.laneWidth, this.fretboard.laneHeight, Fretboard.colors[laneIndex], isSpecial);
-    //         const addedNote = currentTick.addNote(note);
-    //         if (addedNote) {
-    //             addedNotes.push(addedNote);
-    //         }
-    //     });
-        
-    //     return addedNotes;
-    // }
 
     getCurrentNotes() {
         if (! this.currentTick) return []
@@ -344,7 +292,8 @@ export default class NoteManager {
         // console.log(this.totalTickCounter)
         // console.log(this.currentTick);
 
-        this.tickSpeed = this.speed/60;
+        // this.tickSpeed = this.speed/60;
+        this.tickSpeed = this.speed/fps;
         // TODO: Comment
         // this.tickSpeed = 0;
         // console.log(this.tickSpeed)
