@@ -17,7 +17,7 @@ export default class GameManager {
     constructor() {
         // Create scene, camera, renderer, controls, lights
         this.init();
-        this.scene.background = new THREE.Color( 0xffffff );
+        this.scene.background = new THREE.Color( 0x000000 );
         
         // this.addFog();
         
@@ -79,8 +79,8 @@ export default class GameManager {
         // this.setupAudioManager('songs/s0/take_me_out.mp3', 'songs/s0/song.ini');
         this.setupAudioManager('songs/s1');
         const bgImgPath = 'bg/album.jpg'
-        // const bgVideoPath = 'bg/video480.mp4'
-        const bgVideoPath = 'GHL_Crowd_Emotions/GHL_happy_blue.mp4';
+        const bgVideoPath = 'bg/video480.mp4'
+        // const bgVideoPath = 'GHL_Crowd_Emotions/GHL_happy_blue.mp4';
         // const bgImgPath = 'songs/s1/album.jpg'
 
         
@@ -131,11 +131,11 @@ export default class GameManager {
     }
 
     setupScoreManager() {
-        this.scoreManager = new ScoreManager();
+        this.scoreManager = new ScoreManager(this.fretboard, this.scene);
     }
 
     setupBackgroundManager(bgVideoPath, bgImgPath) {
-        this.backgroundManager = new BackgroundManager(bgVideoPath, bgImgPath, this.scene, this.camera, this.gui);
+        this.backgroundManager = new BackgroundManager(bgVideoPath, bgImgPath, this.scene, this.camera, this.gui, true);
     }
 
     togglePause() {
@@ -357,27 +357,27 @@ export default class GameManager {
 
         // create helpers for all the lights in the lightManager depending on their type
         // create helpers for all the lights in the lightManager depending on their type
-        this.lightManager.lights.forEach(light => {
-            let helper;
+        // this.lightManager.lights.forEach(light => {
+        //     let helper;
 
-            if (light instanceof THREE.DirectionalLight) {
-                helper = new THREE.DirectionalLightHelper(light);
-            } else if (light instanceof THREE.SpotLight) {
-                helper = new THREE.SpotLightHelper(light);
-            } else if (light instanceof THREE.PointLight) {
-                helper = new THREE.PointLightHelper(light);
-            } else if (light instanceof THREE.HemisphereLight) {
-                helper = new THREE.HemisphereLightHelper(light);
-            } else if (light instanceof THREE.RectAreaLight) {
-                // RectAreaLightHelper is not part of the core three.js library, it might be in an example library
-                helper = new RectAreaLightHelper(light);
-            } else {
-                console.warn('Unknown light type:', light);
-                return;
-            }
+        //     if (light instanceof THREE.DirectionalLight) {
+        //         helper = new THREE.DirectionalLightHelper(light);
+        //     } else if (light instanceof THREE.SpotLight) {
+        //         helper = new THREE.SpotLightHelper(light);
+        //     } else if (light instanceof THREE.PointLight) {
+        //         helper = new THREE.PointLightHelper(light);
+        //     } else if (light instanceof THREE.HemisphereLight) {
+        //         helper = new THREE.HemisphereLightHelper(light);
+        //     } else if (light instanceof THREE.RectAreaLight) {
+        //         // RectAreaLightHelper is not part of the core three.js library, it might be in an example library
+        //         helper = new RectAreaLightHelper(light);
+        //     } else {
+        //         console.warn('Unknown light type:', light);
+        //         return;
+        //     }
 
-            this.scene.add(helper);
-        });
+        //     this.scene.add(helper);
+        // });
     }
 
     addFog() {

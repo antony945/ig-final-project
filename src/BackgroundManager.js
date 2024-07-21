@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 export default class BackgroundManager {
-    constructor(videoUrl, img, scene, camera, gui) {
+    constructor(videoUrl, img, scene, camera, gui, useVideo=false) {
         this.scene = scene;
         this.camera = camera;
         this.gui = gui;
@@ -10,8 +10,11 @@ export default class BackgroundManager {
         this.backgroundPlane = null;
 
         // this.initControls();
-        this.initBackgroundPlane(videoUrl);
-        // this.loadBackgroundTexture();
+        if (useVideo) {
+            this.initBackgroundPlane(videoUrl);
+        } else {
+            this.loadBackgroundTexture();
+        }
         this.initGUI();
     }
 

@@ -3,7 +3,6 @@ import * as THREE from 'three';
 export default class Note {
     static starPowerColor = 0x4FDDDA;
 
-    // TODO: Support starPower parameter to change appearance during starPower
     constructor(measure, tick, laneIndex, start_x, start_y, start_z, noteRadius, laneWidth, laneHeight, color, isSpecial=false, isLastSpecial=false, starPowerActive=false) {
         this.measure = measure;
         this.tick = tick;
@@ -322,26 +321,6 @@ export default class Note {
             this.material.color.setHex(this.color);
             this.isStarPowerMaterialOn = false;
         }
-
-        // if (starPower) {
-        //     scene.traverse(obj => {
-        //         if(obj.isMesh && obj.material.name.includes('regular')) {
-        //            obj.material = this.mainMaterialStarPower;
-        //         }
-        //     });
-        //     this.isStarPowerMaterialOn = true;
-        // } else if (this.isStarPowerMaterialOn && !starPower) {
-            
-        //     scene.traverse(obj => {
-        //         if (obj.isMesh && obj.material.name.includes('starPower')) {
-        //             obj.material = this.mainMaterial;
-        //         }
-        //     });
-        //     // this.mesh.getObjectByName('central').material = this.mainMaterial;
-        //     // console.log(this.mesh)
-        //     // this.mesh.material.color.set(this.color);
-        //     this.isStarPowerMaterialOn = false;
-        // }
     }
     
     reset() {

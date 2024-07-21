@@ -14,6 +14,7 @@
     "lil-gui": "^0.19.2",
     "stats.js": "^0.17.0",
     "three": "^0.166.1",
-    "three-particle-fire": "^0.1.0"
+    "three-particle-fire": "^0.1.0",
+    "troika-three-text": "^0.49.1"
   }
 }

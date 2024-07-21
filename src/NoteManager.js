@@ -323,6 +323,11 @@ export default class NoteManager {
                         }
                     }
 
+                    // Update star power circle
+                    if (scoreManager.starPower) {
+                        scoreManager.drawStarPowerCircle();
+                    }
+
                     this.totalTickCounter++;
                     this.currentTickCounter++;
                     // this.currentTickCounter = this.totalTickCounter % this.totalTicks;

@@ -8,5 +8,15 @@
          url('../public/fonts/nightmare_hero_normal-webfont.woff') format('woff');
     font-weight: normal;
     font-style: normal;
+}
 
+@font-face {
+    font-family: 'Tungsten-Bold';
+    src: url('../public/fonts/561f38b1f4570de0fb8a39d691ab058c.woff2') format('woff2'),
+         url('../public/fonts/561f38b1f4570de0fb8a39d691ab058c.woff') format('woff'),
+         url('../public/fonts/561f38b1f4570de0fb8a39d691ab058c.eot') format('eot'),
+         url('../public/fonts/561f38b1f4570de0fb8a39d691ab058c.ttf') format('ttf');
+    
+    font-weight: normal;
+    font-style: normal;
 }

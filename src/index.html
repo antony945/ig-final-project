@@ -1,24 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Three.js</title>
-	<link rel="stylesheet" href="./main.css">
-	<link rel="stylesheet" href="./stylesheet.css" type="text/css" charset="utf-8" />
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guitar Hero</title>
+    <link rel="stylesheet" href="./main.css">
+    <link rel="stylesheet" href="./stylesheet.css" type="text/css" charset="utf-8" />
 </head>
 <body>
-	<canvas id="three-canvas"></canvas>
-	<div id="stats-container"></div>
-	<div id="score"></div>
-	<div id="multiplier"></div>
-	<div id="streak"></div>
-	<div id="music-player" style="display:none;">
-        <img id="song-image" src="" alt="Song Image">
-        <p id="song-name"></p>
-        <p id="song-duration">00:00</p>
+    <canvas id="three-canvas"></canvas>
+    <div id="stats-container"></div>
+    <div id="score"></div>
+    <div id="multiplier-container">
+        <div id="multiplier-x">X</div>
+        <div id="multiplier-value"></div>
+        <canvas id="multiplier-circle" width="150" height="150"></canvas>
     </div>
-	<script type="module" src="main.js"></script>
+    <div id="star-power-container">
+        <canvas id="star-power-circle" width="150" height="150"></canvas>
+        <img id="thunder" src="noun-thunder-2879068.svg" alt="Thunder Lightning" />
+    </div>
+    <script type="module" src="main.js"></script>
 </body>
 </html>

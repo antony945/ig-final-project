@@ -1,0 +1,33 @@
+{
+  "songInfo": {
+    "title": "In Too Deep",
+    "author": "Sum 41",
+    "year": 2001,
+    "bpm": 116,
+    "resolution": 8
+  },
+  "notes": [
+    "begin_loading_star_phase",
+    {
+      "measure": 1,
+      "tick": 0,
+      "lanes": [0,1,2]
+    },
+    {
+      "measure": 1,
+      "tick": 1,
+      "lanes": [0,1,2]
+    },
+    {
+      "measure": 1,
+      "tick": 2,
+      "lanes": [0,1,2]
+    },
+    {
+      "measure": 1,
+      "tick": 3,
+      "lanes": [0,1,2]
+    },
+    "end_loading_star_phase"
+  ]
+}

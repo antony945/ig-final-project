@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import Note from './Note.js';
+import { RemoveObject3D } from './utils.js';
 
 export default class Tick {
     static tickZ = 0.01;
@@ -99,7 +100,8 @@ export default class Tick {
         this.accuracy = 0.0;
 
         // TODO: Hide or remove from scene
-        this.hideNotes();
+        this.removeNotes();
+        // this.hideNotes();
         this.notes = {};
     }
 
@@ -168,12 +170,20 @@ export default class Tick {
         }
     }
 
+    removeNotes() {
+        Object.values(this.notes).forEach(note => {
+            RemoveObject3D(note.mesh);
+        });
+    }
+
+    // NOT USED
     hideNotes() {
         Object.values(this.notes).forEach(note => {
             note.mesh.visible = false;
         });
     }
 
+    // NOT USED
     showNotes() {
         Object.values(this.notes).forEach(note => {
             note.mesh.visible = true;
