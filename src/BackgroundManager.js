@@ -10,12 +10,12 @@ export default class BackgroundManager {
         this.backgroundPlane = null;
 
         // this.initControls();
-        // this.initBackgroundPlane();
-        this.loadBackgroundTexture();
+        this.initBackgroundPlane(videoUrl);
+        // this.loadBackgroundTexture();
         this.initGUI();
     }
 
-    initBackgroundPlane() {
+    initBackgroundPlane(videoUrl) {
         this.videoUrl = videoUrl;
         this.video = document.createElement('video');
         this.video.src = this.videoUrl;

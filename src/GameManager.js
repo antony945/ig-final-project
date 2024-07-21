@@ -79,7 +79,8 @@ export default class GameManager {
         // this.setupAudioManager('songs/s0/take_me_out.mp3', 'songs/s0/song.ini');
         this.setupAudioManager('songs/s1');
         const bgImgPath = 'bg/album.jpg'
-        const bgVideoPath = 'bg/video480.mp4'
+        // const bgVideoPath = 'bg/video480.mp4'
+        const bgVideoPath = 'GHL_Crowd_Emotions/GHL_happy_blue.mp4';
         // const bgImgPath = 'songs/s1/album.jpg'
 
         
