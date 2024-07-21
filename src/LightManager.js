@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-class LightManager {
+export default class LightManager {
     constructor(gui) {
         this.lights = [];
         this.resetted = true;
@@ -13,12 +13,10 @@ class LightManager {
         this.createDirectionalLight(0xffffff, [5, 0, 7.5]);
         this.createAmbientLight(0x404040);
         this.createPointLight(0xffffff, [0, 0, 10]);
-        this.createSpotLight(0xffffff, [0, 5, 5]);
     }
 
     addToScene(scene) {
         scene.add(...this.lights);
-        // scene.add(this.spotLightTarget);
     }
 
     createLight(light, color, position) {
@@ -39,7 +37,7 @@ class LightManager {
     }
 
     createDirectionalLight(color, position) {
-        const light = new THREE.DirectionalLight(color, 1);
+        const light = new THREE.DirectionalLight(color, 2);
         
         this.createLight(light, color, position)
 
@@ -55,21 +53,7 @@ class LightManager {
         this.addLightGUI('Ambient Light', light);
     }
 
-    createSpotLight(color, position) {
-        const light = new THREE.SpotLight(color);
-        light.position.set(...position);
-        light.castShadow = true;
-        light.angle = Math.PI / 4;
-        light.penumbra = 0.1;
-        light.decay = 2;
-        light.distance = 200;
-
-        this.lights.push(light);
-        // Add GUI folder for this light if needed
-        this.addLightGUI('Spot Light', light, true);
-    }
-
-    addLightGUI(name, light, isSpotLight = false) {
+    addLightGUI(name, light) {
         const folder = this.gui.addFolder(name);
         const lightColor = { color: light.color.getHex() };
         folder.addColor(lightColor, 'color').onChange((value) => {
@@ -84,52 +68,28 @@ class LightManager {
 
         folder.add(light, 'intensity', 0, 2).listen();
 
-        if (isSpotLight) {
-            folder.add(light, 'angle', 0, Math.PI / 2).name('Angle').listen();
-            folder.add(light, 'penumbra', 0, 1).name('Penumbra').listen();
-            folder.add(light, 'decay', 1, 2).name('Decay').listen();
-            folder.add(light, 'distance', 0, 200).name('Distance').listen();
-        }
-
         this.lightFolders.push(folder);
     }
 
-    animateLights(deltaTime) {
-        const colorChangeSpeed = 0.5;
-        const positionChangeSpeed = 0.5;
-
-        const light = this.lights[0]
-        light.color.set(0xffffff);
-        light.intensity = 3;
-
-        // if (light.originalPosition) {
-        //     light.position.x = light.originalPosition[0] + Math.sin(deltaTime * positionChangeSpeed) * 5;
-        //     light.position.z = light.originalPosition[1] + Math.cos(deltaTime * positionChangeSpeed) * 5;
-        // }
-
-        // this.lights.forEach(light => {
-        //     // Animate color to a bluish hue
-        //     // const hslColor = light.originalColor.getHSL({ h: 0, s: 0, l: 0 });
-        //     // hslColor.h += deltaTime * colorChangeSpeed;
-        //     // if (hslColor.h > 1) hslColor.h -= 1;
-        //     // light.color.setHSL(hslColor.h, hslColor.s, hslColor.l);
-        //     light.color.set(0x0000ff)
-        //     light.intensity = 0.2
-
-        //     // Animate position in a circular motion
-        //     if (light.originalPosition) {
-        //         const time = Date.now() * 0.001;
-        //         light.position.x = light.originalPosition[0] + Math.sin(time * positionChangeSpeed) * 5;
-        //         light.position.y = light.originalPosition[1] + Math.cos(time * positionChangeSpeed) * 5;
-        //     }
-        // });
-
+    animateLights() {
         this.resetted = false;
+        const color1 = new THREE.Color(0xffffff); // White
+        const color2 = new THREE.Color(0xa8ffff); // Light blue
+        const cycleDuration = 2000; // Duration of one color cycle in milliseconds
+        const elapsed = Date.now() % cycleDuration;
+        const t = elapsed / cycleDuration;
+
+        this.lights.forEach(light => {
+            if (light.isDirectionalLight) {
+                const interpolatedColor = color1.clone().lerp(color2, Math.sin(t * Math.PI));
+                light.color.set(interpolatedColor);
+            }
+        });
     }
 
-    update(starPower, deltaTime) {
+    update(starPower) {
         if (starPower) {
-            this.animateLights(deltaTime);
+            this.animateLights();
             return
         }
         
@@ -142,11 +102,10 @@ class LightManager {
             if (light.originalPosition) {
                 light.position.set(...light.originalPosition);
             }
+            console.log(light.originalColor)
             light.color.set(light.originalColor);
-            light.intensity = 1;
+            light.intensity = 2;
         });
         this.resetted = true;
     }
 }
-
-export default LightManager;

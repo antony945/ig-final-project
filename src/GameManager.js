@@ -25,7 +25,6 @@ export default class GameManager {
         // Initialize GUI
         this.setupGUI();
         
-        
         // Create fretboard
         const fretboardTextures = [
             // 'textures/fretboard/Cracked.jpg',
@@ -84,7 +83,6 @@ export default class GameManager {
         // this.setupAudioManager('songs/s0/take_me_out.mp3', 'songs/s0/song.ini');
         this.setupAudioManager('songs/s1');
         
-        
         // Initialize background
         const bgImgPath = 'bg/image_less_blur.png'
         // const bgImgPath = 'songs/s1/album.jpg'
@@ -99,8 +97,8 @@ export default class GameManager {
         this.setupScoreManager();
 
         // CameraShake
-        // this.cameraShake = new CameraShake();
-        this.screenShake = Utils.ScreenShake();
+        this.cameraShake = new CameraShake();
+        // this.screenShake = Utils.ScreenShake();
 
         // Initialize input
         this.setupInputManager();

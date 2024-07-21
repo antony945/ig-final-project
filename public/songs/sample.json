@@ -7,7 +7,6 @@
     "resolution": 8
   },
   "notes": [
-    "begin_loading_star_phase",
     {
       "measure": 1,
       "tick": 0,
@@ -71,7 +70,7 @@
       "tick": 7,
       "lanes": [1]
     },
-    
+    "begin_loading_star_phase",    
     {
       "measure": 3,
       "tick": 0,
@@ -400,7 +399,6 @@
       "tick": 7,
       "lanes": [1]
     },
-    "end_loading_star_phase",
 
     "begin_loading_star_phase",
     {
@@ -503,6 +501,96 @@
       "measure": 17,
       "tick": 2,
       "lanes": [1,4]
+    },
+    {
+      "measure": 17,
+      "tick": 4,
+      "lanes": [4]
+    },
+    {
+      "measure": 17,
+      "tick": 5,
+      "lanes": [4]
+    },
+    {
+      "measure": 17,
+      "tick": 6,
+      "lanes": [3]
+    },
+    {
+      "measure": 17,
+      "tick": 7,
+      "lanes": [2]
+    },
+    {
+      "measure": 18,
+      "tick": 0,
+      "lanes": [1,2]
+    },
+    {
+      "measure": 18,
+      "tick": 1,
+      "lanes": [1,2]
+    },
+    {
+      "measure": 18,
+      "tick": 2,
+      "lanes": [1,3]
+    },
+    {
+      "measure": 18,
+      "tick": 4,
+      "lanes": [3]
+    },
+    {
+      "measure": 18,
+      "tick": 5,
+      "lanes": [3]
+    },
+    {
+      "measure": 18,
+      "tick": 6,
+      "lanes": [2]
+    },
+    {
+      "measure": 18,
+      "tick": 7,
+      "lanes": [1]
+    },
+    {
+      "measure": 19,
+      "tick": 0,
+      "lanes": [0,2]
+    },
+    {
+      "measure": 19,
+      "tick": 1,
+      "lanes": [0,2]
+    },
+    {
+      "measure": 19,
+      "tick": 2,
+      "lanes": [0,3]
+    },
+    {
+      "measure": 19,
+      "tick": 4,
+      "lanes": [3]
+    },
+    {
+      "measure": 19,
+      "tick": 5,
+      "lanes": [3]
+    },
+    {
+      "measure": 19,
+      "tick": 6,
+      "lanes": [2]
+    },
+    {
+      "measure": 19,
+      "tick": 7,
+      "lanes": [1]
     }
   ]
 }

@@ -100,8 +100,8 @@ export default class Tick {
         this.accuracy = 0.0;
 
         // TODO: Hide or remove from scene
-        this.removeNotes();
-        // this.hideNotes();
+        // this.removeNotes();
+        this.hideNotes();
         this.notes = {};
     }
 
@@ -176,7 +176,6 @@ export default class Tick {
         });
     }
 
-    // NOT USED
     hideNotes() {
         Object.values(this.notes).forEach(note => {
             note.mesh.visible = false;

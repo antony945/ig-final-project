@@ -180,7 +180,7 @@ export default class Fretboard {
         pickupAreaMesh.position.z = relativeZ;
 
         // Don't make it visible
-        pickupAreaMesh.visible = true;
+        pickupAreaMesh.visible = false;
         return pickupAreaMesh;
     }
 
