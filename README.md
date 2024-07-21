@@ -1,6 +1,8 @@
 # ig-final-project
 Repository for final project of Interactive Graphics course.
 
+Try the game [here](https://antony945.github.io/ig-final-project/).
+
 ## References
 - https://github.com/jhedev96/JS-Hero/tree/master
 - https://sketchfab.com/3d-models/button-54d1a97dd6a44322817d3fff64b986fd
