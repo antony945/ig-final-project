@@ -462,7 +462,54 @@ export default class GameManager {
 
     // Starts the game and runs gameLoop
     startGame() {
+        // this.test1();
+        // this.test2();
+
         this.audioManager.startAudioSequence(NoteManager.introMeasures, this.noteManager.measureDuration);
+        this.startGameLoop();
+    }
+
+    test1() {
+        const y_perfect_hit = -(this.fretboard.fretboardHeight / 2) + this.fretboard.pickupOffset;
+        const y_start_hit = y_perfect_hit + (this.fretboard.pickupHeight+this.fretboard.pickupOffset/2) / 2;
+        const y_end_hit = y_perfect_hit - (this.fretboard.pickupHeight+this.fretboard.pickupOffset/2) / 2
+        const p1 = new THREE.Vector3(-this.fretboard.fretboardWidth/2, y_start_hit, 0);
+        const p2 = new THREE.Vector3(+this.fretboard.fretboardWidth/2, y_start_hit, 0);
+        const material = new THREE.LineBasicMaterial({
+            color: 0xff0000,
+        });
+        const points = [];
+        // Create line from points
+        points.push(p1, p2);
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const testMesh = new THREE.Line(geometry, material);
+
+        const p3 = new THREE.Vector3(-this.fretboard.fretboardWidth/2, y_end_hit, 0);
+        const p4 = new THREE.Vector3(+this.fretboard.fretboardWidth/2, y_end_hit, 0);
+        const material2 = new THREE.LineBasicMaterial({
+            color: 0xff0000,
+        });
+        const points2 = [];
+        // Create line from points
+        points2.push(p3, p4);
+        const geometry2 = new THREE.BufferGeometry().setFromPoints(points2);
+        const testMesh2 = new THREE.Line(geometry2, material2);
+
+        const p5 = new THREE.Vector3(-this.fretboard.fretboardWidth/2, y_perfect_hit, 0);
+        const p6 = new THREE.Vector3(+this.fretboard.fretboardWidth/2, y_perfect_hit, 0);
+        const material3 = new THREE.LineBasicMaterial({
+            color: 0xff0000,
+        });
+        const points3 = [];
+        // Create line from points
+        points3.push(p5, p6);
+        const geometry3 = new THREE.BufferGeometry().setFromPoints(points3);
+        const testMesh3 = new THREE.Line(geometry3, material3);
+            
+        this.scene.add(testMesh, testMesh2, testMesh3);
+    }
+    
+    test2() {
         const notes = []
         notes.push(...this.noteManager.createNotes(0,4,false,false,1,2))
         notes.push(...this.noteManager.createNotes(0,3,true,false,1,2))
@@ -471,7 +518,6 @@ export default class GameManager {
             note.addToScene(this.scene);
             note.mesh.visible = true
         })
-        this.startGameLoop();
     }
 
     startGameLoop() {

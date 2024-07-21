@@ -24,12 +24,7 @@ export default class Note {
 
         // Define materials
         this.mainMaterial = this.createRegularMaterial()
-        this.sideMaterial = new THREE.MeshStandardMaterial({
-            color: 0xffffff,
-            metalness: 0.2,
-            roughness: 0.6,
-            side: THREE.DoubleSide
-        });
+        this.sideMaterial = this.createSideMaterial()
         // this.mainMaterialStarPower = this.createStarPowerMaterial();
         
         // Normal circular note
@@ -54,6 +49,16 @@ export default class Note {
             metalness: 0.6,  // metallic
             roughness: 0.4,   // Slightly smooth for a reflecstive look
             name: "regular_"+this.color,
+            wireframe: false,
+            side: THREE.DoubleSide
+        });
+    }
+
+    createSideMaterial() {
+        return new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            metalness: 0.2,
+            roughness: 0.6,
             wireframe: false,
             side: THREE.DoubleSide
         });

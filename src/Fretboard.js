@@ -172,7 +172,7 @@ export default class Fretboard {
         // Create a plane geometry for the pickup area
         const geometry = new THREE.PlaneGeometry(pickupWidth, pickupHeight);
 
-        // Create material for the pickup area (transparent)
+        // Create material for the pickup area (transpaarent)
         const material = new THREE.MeshPhysicalMaterial({ color: color, transparent: true, opacity: opacity });
     
         // Create mesh for the pickup area
@@ -180,7 +180,7 @@ export default class Fretboard {
         pickupAreaMesh.position.z = relativeZ;
 
         // Don't make it visible
-        pickupAreaMesh.visible = false;
+        pickupAreaMesh.visible = true;
         return pickupAreaMesh;
     }
 

@@ -1,47 +1,131 @@
 {
     "songInfo": {
-      "title": "Take Me Out",
-      "author": "Franz Ferdinand",
-      "year": 2004,
-      "bpm": 142,
+      "title": "In Too Deep",
+      "author": "Sum 41",
+      "year": 2001,
+      "bpm": 116,
       "resolution": 8
     },
     "notes": [
+      "begin_loading_star_phase",
       {
-        "measure": 2,
+        "measure": 1,
         "tick": 0,
         "lanes": [0]
       },
       {
-        "measure": 2,
+        "measure": 1,
         "tick": 1,
+        "lanes": [0]
+      },
+      "end_loading_star_phase",
+      {
+        "measure": 1,
+        "tick": 4,
+        "lanes": [0]
+      },
+      {
+        "measure": 1,
+        "tick": 5,
+        "lanes": [1]
+      },
+      {
+        "measure": 1,
+        "tick": 6,
+        "lanes": [2]
+      },
+      {
+        "measure": 1,
+        "tick": 7,
         "lanes": [1]
       },
       {
         "measure": 2,
         "tick": 2,
-        "lanes": [2]
-      },{
+        "lanes": [1]
+      },
+      {
         "measure": 2,
         "tick": 3,
-        "lanes": [3]
-      },{
+        "lanes": [1]
+      },
+      {
         "measure": 2,
         "tick": 4,
-        "lanes": [2]
+        "lanes": [1]
       },{
         "measure": 2,
         "tick": 5,
-        "lanes": [1]
+        "lanes": [0]
       },{
         "measure": 2,
         "tick": 6,
-        "lanes": [0]
-      },{
+        "lanes": [1]
+      },
+      {
+        "measure": 2,
+        "tick": 7,
+        "lanes": [1]
+      },
+      "begin_loading_star_phase",
+      {
         "measure": 3,
         "tick": 0,
+        "lanes": [0]
+      },
+      {
+        "measure": 3,
+        "tick": 1,
+        "lanes": [0]
+      },
+      "end_loading_star_phase",
+      {
+        "measure": 3,
+        "tick": 4,
+        "lanes": [0]
+      },
+      {
+        "measure": 3,
+        "tick": 5,
         "lanes": [1]
-      }    
+      },
+      {
+        "measure": 3,
+        "tick": 6,
+        "lanes": [2]
+      },
+      {
+        "measure": 3,
+        "tick": 7,
+        "lanes": [1]
+      },
+      {
+        "measure": 4,
+        "tick": 2,
+        "lanes": [1]
+      },
+      {
+        "measure": 4,
+        "tick": 3,
+        "lanes": [1]
+      },
+      {
+        "measure": 4,
+        "tick": 4,
+        "lanes": [1]
+      },{
+        "measure": 4,
+        "tick": 5,
+        "lanes": [0]
+      },{
+        "measure": 4,
+        "tick": 6,
+        "lanes": [1]
+      },
+      {
+        "measure": 4,
+        "tick": 7,
+        "lanes": [1]
+      }
     ]
   }
-  

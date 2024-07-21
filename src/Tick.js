@@ -13,12 +13,7 @@ export default class Tick {
         'beat': 0xb9b9b9,
         'measure': 0xffffff
     }
-    // static defaultColor = {
-    //     'tick': 0xAAAAAA,
-    //     'beat': 0xFF0000,
-    //     'measure': 0x0000FF
-    // }
-    static lowerVolumeAmout = 0.4;
+    static lowerVolumeAmout = 0.5;
     
     constructor(tickIndex, ticksPerMeasure, tickSpace, totalTicks, fretboardWidth, fretboardHeight, pickupOffset, pickupHeight) {
         this.tickIndex = tickIndex;
@@ -33,8 +28,8 @@ export default class Tick {
         this.x_max = +fretboardWidth / 2;
 
         this.y_perfect_hit = -(fretboardHeight / 2) + pickupOffset;
-        this.y_start_hit = this.y_perfect_hit + pickupHeight / 2;
-        this.y_end_hit = this.y_perfect_hit - pickupHeight / 2
+        this.y_start_hit = this.y_perfect_hit + (pickupHeight+pickupOffset/2) / 2;
+        this.y_end_hit = this.y_perfect_hit - (pickupHeight+pickupOffset/2) / 2
         
         this.y_start = this.y_perfect_hit + tickIndex * tickSpace;
         this.z = Tick.tickZ;
@@ -125,7 +120,6 @@ export default class Tick {
         return b
     }
 
-    // TODO: Make it better
     enableHitEffect(fretboard) {
         this.getNotesLaneIndices().forEach(laneIndex => {
             fretboard.enableFireEffect(laneIndex);

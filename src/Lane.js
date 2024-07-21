@@ -74,34 +74,4 @@ export default class Lane {
         this.geometry = new THREE.CylinderGeometry(radius, radius, p1.distanceTo(p2), 32);        
         return new THREE.Mesh(this.geometry, this.material);
     }
-
-    // Not used
-    addToScene(scene) {
-        scene.add(this.mesh);
-        // Object.keys(this.notes).forEach(measure => this.notes[measure].addToScene(scene));
-    }
-
-    // Not used
-    getNote(measure) {
-        return this.notes[measure];
-    }
-
-    // Not used
-    update(holeMesh) {  
-        Object.keys(this.notes).forEach( measure => {
-            const note = this.notes[measure]; 
-            note.update();
-            note.checkCollision(holeMesh);
-
-            if (note.collided) {
-                this.collidingNote = note;
-                // console.log(`Lane ${this.index}: Note collision with accuracy ${this.collidingNote.accuracy}`);
-                // TODO: Clean code later
-            } else {
-                this.collidingNote = null;
-            }
-        });
-
-        return this.collidingNote;
-    }
 }

@@ -45,8 +45,8 @@ export default class AudioManager {
 
     startAudioSequence(introMeasures, measureDuration) {
         const index = 2;
-        this.scheduleTask(() => this.playSoundEffect('songStart', index), 500);
-        this.scheduleTask(() => this.playDefaultSoundEffect('crowdStart'), 1000);
+        this.scheduleTask(() => this.playSoundEffect('songStart', index, 0.5), 500);
+        this.scheduleTask(() => this.playDefaultSoundEffect('crowdStart', 0.8), 1000);
         this.scheduleTask(() => this.playMainSong(), (introMeasures)*measureDuration*1000);
     }
 
@@ -120,26 +120,42 @@ export default class AudioManager {
         this.mainSong.pause();
     }
 
-    playSoundEffect(name, index) {
+    lowerSoundEffectVolume(name, index, amount) {
+        const effects = this.soundEffects[name];
+        if (!effects) return;
+        
+        const e = effects[index];
+        if (!e) return;
+        
+        const newVolume = Math.max(0, e.getVolume() - amount);
+        e.setVolume(newVolume);
+    }
+
+    playSoundEffect(name, index, amount=0) {
         const effects = this.soundEffects[name];
         if (! effects) return;
 
         const e = effects[index];
+
+
+        this.lowerSoundEffectVolume(name, index, amount);
+
         if (e.isPlaying) {
             e.stop();
         }
+
         e.play();
     }
 
-    playDefaultSoundEffect(name) {
-        return this.playSoundEffect(name, 0);
+    playDefaultSoundEffect(name, amount=0) {
+        return this.playSoundEffect(name, 0, amount);
     }
 
-    playRandomSoundEffect(name) {
+    playRandomSoundEffect(name, amount=0) {
         const effects = this.soundEffects[name];
         if (! effects) return;
         const randomIndex = Math.floor(Math.random() * effects.length);
-        return this.playSoundEffect(name, randomIndex);
+        return this.playSoundEffect(name, randomIndex, amount);
         // const e = effects[randomIndex];
         // if (! e.isPlaying) {
         //     e.stop();
