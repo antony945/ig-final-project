@@ -79,6 +79,7 @@ export default class GameManager {
         // this.setupAudioManager('songs/s0/take_me_out.mp3', 'songs/s0/song.ini');
         this.setupAudioManager('songs/s1');
         const bgImgPath = 'bg/album.jpg'
+        const bgVideoPath = 'bg/video480.mp4'
         // const bgImgPath = 'songs/s1/album.jpg'
 
         
@@ -110,7 +111,7 @@ export default class GameManager {
         this.createPauseOverlay();
 
         // Initialize background
-        this.setupBackgroundManager(bgImgPath);
+        this.setupBackgroundManager(bgVideoPath, bgImgPath);
     }
 
     setupFretboard(width, height, textureFile, numLanes) {
@@ -132,8 +133,8 @@ export default class GameManager {
         this.scoreManager = new ScoreManager();
     }
 
-    setupBackgroundManager(bgImgPath) {
-        this.backgroundManager = new BackgroundManager(bgImgPath, this.scene, this.gui);
+    setupBackgroundManager(bgVideoPath, bgImgPath) {
+        this.backgroundManager = new BackgroundManager(bgVideoPath, bgImgPath, this.scene, this.camera, this.gui);
     }
 
     togglePause() {
