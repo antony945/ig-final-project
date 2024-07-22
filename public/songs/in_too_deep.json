@@ -45,6 +45,11 @@
     },
     {
       "measure": 2,
+      "tick": 1,
+      "lanes": [3]
+    },
+    {
+      "measure": 2,
       "tick": 2,
       "lanes": [2]
     },
@@ -109,6 +114,11 @@
     },
     {
       "measure": 4,
+      "tick": 1,
+      "lanes": [3]
+    },
+    {
+      "measure": 4,
       "tick": 2,
       "lanes": [2]
     },
@@ -149,7 +159,7 @@
     },
     {
       "measure": 5,
-      "tick": 1,
+      "tick": 3,
       "lanes": [0]
     },
     {
@@ -171,6 +181,11 @@
       "measure": 5,
       "tick": 7,
       "lanes": [2]
+    },
+    {
+      "measure": 6,
+      "tick": 1,
+      "lanes": [3]
     },
     {
       "measure": 6,
@@ -240,6 +255,11 @@
     },
     {
       "measure": 8,
+      "tick": 1,
+      "lanes": [3]
+    },
+    {
+      "measure": 8,
       "tick": 2,
       "lanes": [2]
     },
@@ -306,6 +326,11 @@
     },
     {
       "measure": 10,
+      "tick": 1,
+      "lanes": [3]
+    },
+    {
+      "measure": 10,
       "tick": 2,
       "lanes": [2]
     },
@@ -369,6 +394,11 @@
       "measure": 11,
       "tick": 7,
       "lanes": [2]
+    },
+    {
+      "measure": 12,
+      "tick": 1,
+      "lanes": [3]
     },
     {
       "measure": 12,
