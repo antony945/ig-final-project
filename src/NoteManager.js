@@ -115,21 +115,21 @@ export default class NoteManager {
                 // console.log(notes[i+1])
                 isLastSpecial = (notes[i+1] === "end_loading_star_phase")
 
-                addedNotes.push(...this.createNotes(measure, item.tick, loadingStarPhase, isLastSpecial, ...item.lanes));
+                addedNotes.push(...this.createNotes(measure, item.tick, loadingStarPhase, isLastSpecial, false, ...item.lanes));
             };
         }
 
-        notes.forEach(item => {
-            if (item === "begin_loading_star_phase") {
-                loadingStarPhase = true;
-            } else if (item === "end_loading_star_phase") {
-                loadingStarPhase = false;
-            } else {
-                const measure = item.measure;
+        // notes.forEach(item => {
+        //     if (item === "begin_loading_star_phase") {
+        //         loadingStarPhase = true;
+        //     } else if (item === "end_loading_star_phase") {
+        //         loadingStarPhase = false;
+        //     } else {
+        //         const measure = item.measure;
 
-                addedNotes.push(...this.createNotes(measure, item.tick, loadingStarPhase, ...item.lanes));
-            };
-        });
+        //         addedNotes.push(...this.createNotes(measure, item.tick, loadingStarPhase, ...item.lanes));
+        //     };
+        // });
 
         // console.log(addedNotes)
         return addedNotes;
@@ -208,7 +208,7 @@ export default class NoteManager {
         // console.log("speed ", this.speed2)
     }
 
-    createNotes(measure, tick, isSpecial, isLastSpecial, ...laneIndexes) {
+    createNotes(measure, tick, isSpecial, isLastSpecial, starPowerActive, ...laneIndexes) {
         const addedNotes = [];
 
         // Get tickLine
@@ -220,7 +220,7 @@ export default class NoteManager {
 
             // Create all notes already in their position (even outside the lane)
             const noteY = currentTick.mesh.position.y + this.measureSpace * measure
-            const note = new Note(measure, currentTick.tickIndex, laneIndex, lane.x, noteY, lane.z, this.fretboard.laneWidth/4, this.fretboard.laneWidth, this.fretboard.laneHeight, Fretboard.colors[laneIndex], isSpecial, isLastSpecial);
+            const note = new Note(measure, currentTick.tickIndex, laneIndex, lane.x, noteY, lane.z, this.fretboard.laneWidth/4, this.fretboard.laneWidth, this.fretboard.laneHeight, Fretboard.colors[laneIndex], isSpecial, isLastSpecial, starPowerActive);
             addedNotes.push(note);
         });
         
@@ -295,7 +295,7 @@ export default class NoteManager {
         // this.tickSpeed = this.speed/60;
         this.tickSpeed = this.speed/fps;
         // TODO: Comment
-        // this.tickSpeed = 0;
+        this.tickSpeed = 0;
         // console.log(this.tickSpeed)
 
         // Initialize current tick
