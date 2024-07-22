@@ -1,18 +1,13 @@
 import * as THREE from 'three';
-import ini from 'ini';
+import songData from '../public/songs/in_too_deep.json'
 
 export default class AudioManager {
-    constructor(mainSongPath, songIniPath, soundEffects, listener) {
+    constructor(mainSongPath, soundEffects, listener) {
         this.listener = listener;
         this.audioLoader = new THREE.AudioLoader();
         
         this.soundEffects = {};
         this.loadSoundEffects(soundEffects);
-
-        // this.songProperties = this.loadSongProperties(songIniPath);
-        this.loadSongProperties(songIniPath).then(properties => {
-            this.songProperties = properties;
-        });
         
         this.mainSong = new THREE.Audio(this.listener);
         this.loadMainSong(mainSongPath);
@@ -27,17 +22,6 @@ export default class AudioManager {
         // this.skipTime = 3; // Time in seconds to skip at the start of the song
     }
 
-    async loadSongProperties(path) {
-        const response = await fetch(path);
-        const data = await response.text();
-        const s = ini.parse(data).Song;
-        return s;
-    }
-
-    getSongProperties() {
-        return this.songProperties;
-    }
-
     getMainSongCurrentTime() {
         const currentTime = this.mainSong.context.currentTime - this.mainSong.startTime
         return currentTime
@@ -47,7 +31,7 @@ export default class AudioManager {
         const index = 2;
         this.scheduleTask(() => this.playSoundEffect('songStart', index, 0.5), 500);
         this.scheduleTask(() => this.playDefaultSoundEffect('crowdStart', 0.8), 1000);
-        this.scheduleTask(() => this.playMainSong(), (introMeasures)*measureDuration*1000-measureDuration/8*1000);
+        this.scheduleTask(() => this.playMainSong(), (introMeasures)*measureDuration*1000-measureDuration/songData.songInfo.resolution*1000);
     }
 
     scheduleTask(callback, delay) {
@@ -162,14 +146,6 @@ export default class AudioManager {
         // }
         // e.play();
     }
-
-    // getDurationSoundEffect(name, index) {
-    //     const e = this.soundEffects[name][index];
-    //     if (! e) return 0;
-    //     console.log(e);
-        
-    //     return e.duration * 1000; // Convert to milliseconds
-    // }
 
     pauseSoundEffect(name) {
         const effects = this.soundEffects[name];

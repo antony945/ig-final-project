@@ -25,7 +25,6 @@ export default class Fretboard {
         this.fretboardHeight = fretboardHeight;
         this.texturePath = texturePath;
         this.numLanes = numLanes;
-        this.notesLaneIndexes = {}; // TODO: What's this?
 
         this.pickupHeight = 0.8; // Height of pickup
         this.pickupOffset = 0.5; // Offset of pickup
@@ -101,8 +100,6 @@ export default class Fretboard {
         this.lanes = [];
         for (let i = 0; i < this.numLanes; i++) {
             const lane = new Lane(i, this.laneWidth, this.laneHeight, Fretboard.laneZ, fretboardWidth, pickupHeight, this.holeRadius*Fretboard.coneRadiusFactor);
-            
-            // TODO: Think if it is better to attach Lanes to Fretboard or not
             this.mesh.add(lane.mesh);
             this.lanes.push(lane);
         }

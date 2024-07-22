@@ -75,8 +75,8 @@ export default class GameManager {
         });
 
         // Create noteManager
-        // this.setupNoteManager(142, 4, 'songs/sample.json');
-        this.setupNoteManager(116, 4, 'songs/sample.json');
+        // this.setupNoteManager();
+        this.setupNoteManager();
         
         // Initialize audio
         // this.setupAudioManager('songs/s0/take_me_out.mp3', 'songs/s0/song.ini');
@@ -98,7 +98,6 @@ export default class GameManager {
 
         // CameraShake
         this.cameraShake = new CameraShake();
-        // this.screenShake = Utils.ScreenShake();
 
         // Initialize input
         this.setupInputManager();
@@ -142,9 +141,6 @@ export default class GameManager {
     }
 
     pauseGame() {
-        // Freeze animations
-        // Add logic to pause any animation loops
-
         // Freeze audio
         this.audioManager.pauseActiveSounds();
 
@@ -181,12 +177,9 @@ export default class GameManager {
         document.body.appendChild(this.pauseOverlay);
     }
 
-    setupNoteManager(beatsPerMinute, beatsPerMeasure, notesFile) {
+    setupNoteManager() {
         this.noteManager = new NoteManager(
             this.fretboard,
-            beatsPerMinute,
-            beatsPerMeasure,
-            notesFile,
             this.audioManager,
         );
         this.noteManager.addTicksToScene(this.scene);
@@ -209,12 +202,9 @@ export default class GameManager {
         };
 
         const mainSongAudioFile = mainSongFolder + '/full_song.mp3';
-        const mainSongIniFile = mainSongFolder + '/song.ini';
-        const mainSongImgFile = mainSongFolder + '/album.jpg';
 
         this.audioManager = new AudioManager(
             mainSongAudioFile,
-            mainSongIniFile,
             soundEffects,
             this.listener
         );
@@ -328,7 +318,6 @@ export default class GameManager {
 
     shakeCamera() {
         this.cameraShake.shake(this.camera, new THREE.Vector3(0.3, 0.1, 0.3), 100);
-        // this.screenShake.shake(this.camera, new THREE.Vector3(1, 0, 0), 150);
     }
 
     updateStrumAnimation(pressedLanes) {
@@ -373,17 +362,15 @@ export default class GameManager {
         const deltaTime = this.clock.getDelta();
         this.fps = 1/deltaTime;
         this.stats.begin(); // Begin measuring FPS
-
+        
         // Get pressed lanes in this frame
         const pressedLanesIndices = this.inputManager.getPressedLanes();
         
         // console.log(this.fps)
-
         this.noteManager.update(this.scoreManager, this.audioManager, this.fps, this.scene); // Update ticks and notes position and handles miss without strumming   
         this.fretboard.update(pressedLanesIndices, deltaTime, this.noteManager.tickSpeed); // Update fretboard texture and press effects
         
         this.cameraShake.update(this.camera);
-        // this.screenShake.update(this.camera);
 
         this.lightManager.update(this.scoreManager.starPower, deltaTime);
         this.controls.update();

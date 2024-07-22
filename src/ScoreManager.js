@@ -75,6 +75,13 @@ export default class ScoreManager {
             this.streakText.sync();
             this.streak1.sync();
             this.streak2.sync();
+        } else {
+            this.streakText.text = "";
+            this.streak1.text = "";
+            this.streak2.text = "";
+            this.streakText.sync();
+            this.streak1.sync();
+            this.streak2.sync();
         }
         const score = document.getElementById('score');
         score.innerText = `${this.score}`;
@@ -90,7 +97,7 @@ export default class ScoreManager {
         const ctx = canvas.getContext('2d');
         const radius = canvas.width / 2;
         const lineWidth = 10;
-        const totalParts = 10
+        const totalParts = 10;
         const angleStep = (2 * Math.PI) / totalParts; // Divide circle into 10 parts
         var filledParts = this.streakCount % totalParts;
     
@@ -104,7 +111,7 @@ export default class ScoreManager {
         ctx.stroke();
 
         if (this.defaultMultiplier == this.maxMultiplier) {
-            filledParts = 9
+            filledParts = totalParts
         }
 
         // Draw the filled part of the ring
@@ -165,7 +172,6 @@ export default class ScoreManager {
             this.defaultMultiplier = 4;
         }
 
-
         this.multiplier = this.defaultMultiplier;
         if (this.starPower) {
             this.multiplier *= this.starPowerMultiplier;
@@ -195,7 +201,6 @@ export default class ScoreManager {
         this.hideStarPowerCircle();
     }
 
-    // TODO: Think if implement accuracy or not
     handleHit(hittedNotes) {
         // We have list of hitted notes, for each of them
         const isSomeNoteStar = hittedNotes.some(n => n.isSpecial);

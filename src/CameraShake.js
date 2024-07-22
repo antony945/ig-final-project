@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 
+// Based on https://github.com/felixmariotto/three-screenshake/tree/master
 export default class CameraShake {
     constructor() {
         this.shaking = false;

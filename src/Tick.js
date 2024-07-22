@@ -101,8 +101,8 @@ export default class Tick {
         this.accuracy = 0.0;
 
         // TODO: Hide or remove from scene
-        // this.removeNotes();
-        this.hideNotes();
+        this.removeNotes();
+        // this.hideNotes();
         this.notes = {};
     }
 
@@ -112,12 +112,7 @@ export default class Tick {
     }
 
     checkCollision() {
-        // Check collision only if it has notes, otherwise skip
-        // TODO: Think if it's needed or not
-        // if (Object.keys(this.notes).length == 0) return false;
-
-        // TODO: To better implement it
-        // return (this.mesh.position.y < this.y_start_hit) && (this.mesh.position.y > this.y_end_hit);        
+        return (this.mesh.position.y < this.y_start_hit) && (this.mesh.position.y > this.y_end_hit);        
         const b = (this.mesh.position.y < this.y_start_hit) && (this.mesh.position.y > this.y_end_hit);        
         // console.log(this.tickIndex + ") " + b + " | " + this.collided + " | " + this.y_start_hit + " --- " + this.mesh.position.y + " --- " + this.y_end_hit)
         return b
@@ -144,10 +139,10 @@ export default class Tick {
         // Mark line and all notes as hitted
         this.hitted = true;
 
-        // TODO: Use another animation with flames
+        // Use animation with flames
         this.enableHitEffect(fretboard);
 
-        // TODO: Handle in better way
+        // Handle in better way
         Object.values(this.notes).forEach(note => {
             note.mesh.hitted = this.mesh.hitted;
 

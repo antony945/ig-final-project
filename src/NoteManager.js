@@ -2,7 +2,7 @@ import Note from './Note.js';
 import Lane from './Lane.js';
 import Tick from './Tick.js';
 import Fretboard from './Fretboard.js';
-import songData from '../public/songs/sample.json'
+import songData from '../public/songs/in_too_deep.json'
 
 // SPEED SHOULD BE SPACE / TIME
 // SPACE  IS HOW MUCH SPACE I WANT TO COVER
@@ -18,18 +18,18 @@ import songData from '../public/songs/sample.json'
 
 export default class NoteManager {
     static timeToReactMillisecond = 2000;
-    static ticksPerBeat = 2;
     static defaultFPS = 60;
     static introMeasures = 3
 
-    constructor(fretboard, beatsPerMinute, beatsPerMeasure, notesFile, mainSong) {
+    constructor(fretboard, mainSong) {
         this.fretboard = fretboard;
         this.mainSong = mainSong;   // To sync audio with notes
         
         // Starting from the song, it extracts information about measure
-        this.beatsPerMinute = beatsPerMinute;
-        this.beatsPerMeasure = beatsPerMeasure;
-        this.ticksPerMeasure = NoteManager.ticksPerBeat*this.beatsPerMeasure;
+        this.beatsPerMinute = songData.songInfo.bpm;
+        this.ticksPerMeasure = songData.songInfo.resolution;
+        this.ticksPerBeat = songData.songInfo.ticks_per_beat;        
+        this.beatsPerMeasure = this.ticksPerMeasure/this.ticksPerBeat;
         this.beatsPerSecond = this.beatsPerMinute/60;
         
         // Duration in seconds of beat and measure
@@ -38,12 +38,12 @@ export default class NoteManager {
         
         // Other parameters
         this.visibleBeatLinesCount = Math.ceil(NoteManager.timeToReactMillisecond/1000 * this.beatsPerSecond);
-        this.visibleTickLinesCount = this.visibleBeatLinesCount*NoteManager.ticksPerBeat;
+        this.visibleTickLinesCount = this.visibleBeatLinesCount*this.ticksPerBeat;
 
         // TICK_SPACE = LANE_LENGTH/(TIME_TO_REACT (s) * BeatPerSecond * 2)
         // TICK_SPACE = LANE_LENGTH/(DEFAULT_VISIBLE_BEAT_LINES*2)
         // this.tickSpace = (this.fretboard.fretboardHeight-this.fretboard.pickupHeight-this.fretboard.pickupOffset) / this.visibleTickLinesCount;
-        this.tickSpace = (this.fretboard.fretboardHeight) / ((NoteManager.timeToReactMillisecond/1000) * this.beatsPerSecond * NoteManager.ticksPerBeat)
+        this.tickSpace = (this.fretboard.fretboardHeight) / ((NoteManager.timeToReactMillisecond/1000) * this.beatsPerSecond * this.ticksPerBeat)
         this.measureSpace = this.tickSpace*this.ticksPerMeasure;   
 
         // Setup speed
@@ -81,6 +81,7 @@ export default class NoteManager {
         return measureCounter*this.ticksPerMeasure + tickCounter
     }
 
+    // Not used
     async loadNotesFromFile(filePath) {
         try {
             const response = await fetch(filePath);
@@ -92,7 +93,6 @@ export default class NoteManager {
         }
     }
 
-    // https://songbpm.com/@franz-ferdinand/take-me-out
     loadNotesFromJson(songData) {
         const songInfo = songData.songInfo;
         const notes = songData.notes;
@@ -292,10 +292,9 @@ export default class NoteManager {
         // console.log(this.totalTickCounter)
         // console.log(this.currentTick);
 
-        // this.tickSpeed = this.speed/60;
         this.tickSpeed = this.speed/fps;
-        // TODO: Comment
-        this.tickSpeed = 0;
+        // TODO: Comment the following line
+        // this.tickSpeed = 0;
         // console.log(this.tickSpeed)
 
         // Initialize current tick
@@ -347,59 +346,6 @@ export default class NoteManager {
                 }
             }
         });
-
-        // this.allNotes.forEach(note => {
-        //     if (scoreManager.starPower && note.material !== note.mainMaterialStarPower) {
-        //         note.material = note.mainMaterialStarPower;
-        //     } else if (!scoreManager.starPower && note.material !== note.mainMaterial) {
-        //         note.material = note.mainMaterial;
-        //     }
-        // })
-        // // Check if star power, in that case change material
-        // if (! scoreManager.starPower) {
-        //     scene.traverse(obj => {
-        //         if(obj.isMesh && obj.material.name.includes('regular')) {
-        //            obj.material = this.mainMaterialStarPower;
-        //         }
-        //     });
-        //     this.isStarPowerMaterialOn = true;
-        // }
-        // else if (this.isStarPowerMaterialOn && !starPower) {
-            
-        //     // scene.traverse(obj => {
-        //     //     if (obj.isMesh && obj.material.name.includes('starPower')) {
-        //     //         obj.material = this.mainMaterial;
-        //     //     }
-        //     // });
-        //     this.mesh.getObjectByName('central').material = this.mainMaterial;
-        //     // console.log(this.mesh)
-        //     // this.mesh.material.color.set(this.color);
-        //     this.isStarPowerMaterialOn = false;
-        // }
-
-        // // If now we loaded star power
-        // if (!previoslyStarPower && scoreManager.starPower) {
-        //     // TODO: Change notes material to star power
-        // } else if (previoslyStarPower && ! scoreManager.starPower) {
-        //     // TODO: Change notes material to normal
-        // }
-
-        // if (previoslyLoadingStarPower && !scoreManager.loadingStarPower) {
-        //     // Even if notes are special, display them as normal
-        //     this.disableSpecialNotes = true;
-        // }
-
-        // if (this.disableSpecialNotes) {
-        //     // Update all successive notes to normal until you found the last one
-        //     console.log(this.allNotesIndex);
-        //     for (; this.allNotesIndex < this.allNotes; this.allNotesIndex++) {
-        //         // const element = arraythis;
-                
-        //     }
-
-        //     // Once you found that, stop
-        //     this.disableSpecialNotes = false;
-        // }
 
         // console.log(this.currentTick)
     }
