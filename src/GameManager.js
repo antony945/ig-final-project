@@ -196,11 +196,16 @@ export default class GameManager {
 
     setupAudioManager(mainSongFolder) {
         const soundEffects = {
-            // noteHit: ['path/to/noteHit.mp3'],
             songStart: ['effects/song_start_1.mp3', 'effects/song_start_2.mp3', 'effects/song_start_3.mp3'],
             crowdStart: ['effects/crowd_256.mp3'],
-            strumMiss: ['effects/note_miss_1.mp3', 'effects/note_miss_2.mp3', 'effects/note_miss_3.mp3', 'effects/note_miss_4.mp3', 'effects/note_miss_5.mp3', 'effects/note_miss_6.mp3']
-            // Add other sound effects as needed
+            strumMiss: [
+                'effects/note_miss_1.mp3',
+                'effects/note_miss_2.mp3',
+                'effects/note_miss_3.mp3',
+                'effects/note_miss_4.mp3',
+                'effects/note_miss_5.mp3',
+                'effects/note_miss_6.mp3'
+            ]
         };
 
         const mainSongAudioFile = mainSongFolder + '/full_song.mp3';
@@ -296,13 +301,13 @@ export default class GameManager {
         this.lightManager = new LightManager(this.gui);
         this.lightManager.addToScene(this.scene);
 
-        // create helpers for all the lights in the lightManager depending on their type
-        // create helpers for all the lights in the lightManager depending on their type
+        // // create helpers for all the lights in the lightManager depending on their type
         // this.lightManager.lights.forEach(light => {
         //     let helper;
 
         //     if (light instanceof THREE.DirectionalLight) {
-        //         helper = new THREE.DirectionalLightHelper(light);
+        //         // light.position.normalize();
+        //         helper = new THREE.DirectionalLightHelper(light, 1, 0x000000);
         //     } else if (light instanceof THREE.SpotLight) {
         //         helper = new THREE.SpotLightHelper(light);
         //     } else if (light instanceof THREE.PointLight) {
@@ -439,8 +444,10 @@ export default class GameManager {
     
     test2() {
         const notes = []
-        notes.push(...this.noteManager.createNotes(0,4,false,false,1,2))
-        notes.push(...this.noteManager.createNotes(0,3,true,false,1,2))
+        // notes.push(...this.noteManager.createNotes(0,3,false,false,false,0,1,2,3,4)) // normal
+        notes.push(...this.noteManager.createNotes(0,3,true,false,false,0,1,2,3,4)) // special
+        // notes.push(...this.noteManager.createNotes(0,3,false,false,false,3)) // normal star
+        // notes.push(...this.noteManager.createNotes(0,3,true,false,false,4)) // special star
 
         notes.forEach(note => {
             note.addToScene(this.scene);

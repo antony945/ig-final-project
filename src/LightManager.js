@@ -12,7 +12,7 @@ export default class LightManager {
         // Create default lights
         this.createDirectionalLight(0xffffff, [5, 0, 7.5]);
         this.createAmbientLight(0x404040);
-        this.createPointLight(0xffffff, [0, 0, 10]);
+        // this.createPointLight(0xffffff, [0, 0, 10]);
     }
 
     addToScene(scene) {

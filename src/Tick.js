@@ -14,6 +14,7 @@ export default class Tick {
         'beat': 0xb9b9b9,
         'measure': 0xffffff
     }
+
     static lowerVolumeAmout = 0.5;
     
     constructor(tickIndex, ticksPerMeasure, tickSpace, totalTicks, fretboardWidth, fretboardHeight, pickupOffset, pickupHeight) {

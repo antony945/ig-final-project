@@ -24,6 +24,7 @@ export default class ScoreManager {
         // Create streak text
         this.streak2 = new Text();
         this.streak2_default_text = "STREAK";
+        // this.streak2.text = "STREAK";
         this.streak2.fontSize = 0.55
         this.streak2.position.x = 0.3
         this.streak2.position.y = fretboard.fretboardHeight/2;
@@ -35,6 +36,7 @@ export default class ScoreManager {
 
         this.streak1 = new Text();
         this.streak1_default_text = "NOTE";
+        // this.streak1.text = "NOTE";
         this.streak1.position.x = 0.3
         this.streak1.fontSize = 0.8       
         this.streak1.position.y = fretboard.fretboardHeight/2;
@@ -43,19 +45,16 @@ export default class ScoreManager {
         this.streak1.fontStyle = "italic"
         this.streak1.outlineWidth = 0.05
         this.streak1.outlineBlur = 0.05
-        // this.streak1.
 
         this.streakText = new Text();
-        // this.streakText.text = this.streakCount.toString();
+        // this.streakText.text = 35;
         this.streakText.fontSize = 1.2;
         this.streakText.position.x = -fretboard.fretboardWidth/2.8;
         this.streakText.position.y = fretboard.fretboardHeight/2;
         this.streakText.position.z = 1.95;
         this.streakText.orientation = "+x+z"
-        // this.streakText.fontStyle = "italic"
         this.streakText.outlineWidth = 0.05
         this.streakText.outlineBlur = 0.05
-        // this.streakText.textAlign = 'left' 
         this.addToScene(scene);
 
         this.thunderImg = document.getElementById('thunder');

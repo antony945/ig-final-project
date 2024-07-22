@@ -27,7 +27,7 @@ export default class Note {
         // this.mainMaterialStarPower = this.createStarPowerMaterial();
         
         // Normal circular note
-        this.mesh = this.createMesh(this.mainMaterial, this.sideMaterial, isSpecial);
+        this.mesh = this.createMesh(this.mainMaterial, this.sideMaterial, isSpecial, starPowerActive);
 
         this.mesh.castShadow = true; // Ensure the note casts shadows
         this.mesh.receiveShadow = true; // Ensure the note receives shadows
@@ -63,14 +63,6 @@ export default class Note {
         });
     }
 
-    createStarPowerMaterial() {
-        return new THREE.MeshNormalMaterial({
-            name: "starPower",
-            wireframe: false,
-            side: THREE.DoubleSide
-        });
-    }
-
     createEdgeMesh(geometry, color, thresholdAngle=120) {
         const edgeGeometry = new THREE.EdgesGeometry(geometry, thresholdAngle);
         const edgeMaterial = new THREE.LineBasicMaterial({ color: color });
@@ -78,8 +70,12 @@ export default class Note {
         return edgeMesh;
     };
 
-    createMesh(mainMaterial, sideMaterial, isSpecial) {
+    createMesh(mainMaterial, sideMaterial, isSpecial, starPowerActive = false) {
         this.material = mainMaterial;
+
+        if (starPowerActive) {
+            this.material.color.setHex(Note.starPowerColor);
+        }
 
         const bottomRadius = .95*this.noteRadius;
         const topRadius = .4*this.noteRadius;  
@@ -106,7 +102,7 @@ export default class Note {
         const bottomEdges = this.createEdgeMesh(meshes.bottom.geometry, edgeColor);
         const centralEdges = this.createEdgeMesh(meshes.central.geometry, edgeColor);
         const topEdges = this.createEdgeMesh(meshes.top.geometry, edgeColor);
-        
+    
         bottomMesh.add(bottomEdges);
         centralMesh.add(centralEdges);
         centralMesh.name = "central";
@@ -308,16 +304,21 @@ export default class Note {
                 // Unique way is to remove from scene and add another
                 this.removeFromScene(scene);
                 // Change mesh creating a new one normal-shaped
-                this.mesh = this.createMesh(this.mainMaterial, this.sideMaterial, false);
-                // Add it asato scene
+                this.mesh = this.createMesh(
+                    this.mainMaterial,
+                    this.sideMaterial,
+                    false
+                );
+                // Add it to scene
                 this.addToScene(scene);
-                // scene.add(this.mesh);
             }
         }
         if (!this.isStarPowerMaterialOn && starPower) {
+            // Change material color to star power color 
             this.material.color.setHex(Note.starPowerColor);
             this.isStarPowerMaterialOn = true;
         } else if (this.isStarPowerMaterialOn && !starPower) {
+            // Change material color to default color 
             this.material.color.setHex(this.color);
             this.isStarPowerMaterialOn = false;
         }
@@ -339,29 +340,5 @@ export default class Note {
 
     removeFromScene(scene) {
         scene.remove(this.mesh);
-        // TODO: This would have to remove the note from the scene once hitted
-        // But now for testing purpose it's just reset it on original position
-        // this.reset();
-    }
-
-    checkCollision(pickupHoleMesh) {
-        // Check if the note collide with the pickup hole mesh
-        const noteBox = new THREE.Box3().setFromObject(this.mesh);
-        const pickupBox = new THREE.Box3().setFromObject(pickupHoleMesh);
-
-        this.collided = noteBox.intersectsBox(pickupBox);
-        this.accuracy = 0;
-        if (this.collided) {
-            // Calculate collision accuracy
-            const noteCenterY = this.mesh.position.y;
-            const pickupCenterY = pickupBox.min.y + (pickupBox.max.y - pickupBox.min.y) / 2;
-
-            // Accuracy is higher when note is closer to the center of the pickup
-            const distance = Math.abs(noteCenterY - pickupCenterY);
-            const maxDistance = (pickupBox.max.y - pickupBox.min.y) / 2;
-
-            this.accuracy = Math.max(0, 1 - (distance / maxDistance));
-        }
-        return { collided: this.collided, accuracy: this.accuracy };
     }
 }

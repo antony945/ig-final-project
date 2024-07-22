@@ -54,6 +54,7 @@ export default class Fretboard {
         this.geometry = new THREE.PlaneGeometry(fretboardWidth, fretboardHeight);
         this.material = new THREE.MeshPhysicalMaterial(
             {
+                // color: 0xffffff
                 map: this.texture,
                 // side: THREE.DoubleSide,
             }
