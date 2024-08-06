@@ -19,11 +19,18 @@ export default class GameManager {
         this.init();
         this.scene.background = new THREE.Color( 0x000000 );
 
-        // Initialize Stats.js
-        this.setupStats();
-        
         // Initialize GUI
         this.setupGUI();
+
+        // Initialize background
+        const bgImgPath = 'bg/image_less_blur.png'
+        // const bgImgPath = 'songs/s1/album.jpg'
+        const bgVideoPath = 'bg/video480.mp4'
+        // const bgVideoPath = 'GHL_Crowd_Emotions/GHL_happy_blue.mp4';
+        this.setupBackgroundManager(bgVideoPath, bgImgPath, false);
+
+        // Initialize Stats.js
+        this.setupStats();        
         
         // Create fretboard
         const fretboardTextures = [
@@ -64,16 +71,6 @@ export default class GameManager {
         const randomIndex = Math.floor(Math.random() * fretboardTextures.length);
         this.setupFretboard(5, 15, fretboardTextures[randomIndex], 5)
 
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            this.camera.aspect = window.innerWidth / window.innerHeight;
-            this.camera.updateProjectionMatrix();
-            this.renderer.setSize(window.innerWidth, window.innerHeight);
-            this.fretboard.fireEffects.forEach(fireEffect => {
-                fireEffect.material.setPerspective(this.camera.fov, window.innerHeight);
-            });
-        });
-
         // Create noteManager
         // this.setupNoteManager();
         this.setupNoteManager();
@@ -83,12 +80,6 @@ export default class GameManager {
         // this.setupAudioManager('songs/s0/take_me_out.mp3', 'songs/s0/song.ini');
         this.setupAudioManager('songs/s1');
         
-        // Initialize background
-        const bgImgPath = 'bg/image_less_blur.png'
-        // const bgImgPath = 'songs/s1/album.jpg'
-        const bgVideoPath = 'bg/video480.mp4'
-        // const bgVideoPath = 'GHL_Crowd_Emotions/GHL_happy_blue.mp4';
-        this.setupBackgroundManager(bgVideoPath, bgImgPath, false);
         
         // Add lights
         this.setupLightManager(this.gui);
@@ -106,6 +97,41 @@ export default class GameManager {
         this.isPaused = false;
         // Add pause overlay
         this.createPauseOverlay();
+    }
+
+    createIntroOverlay() {
+        this.introOverlay = document.createElement('div');
+        this.introOverlay.style.position = 'fixed';
+        this.introOverlay.style.top = 0;
+        this.introOverlay.style.left = 0;
+        this.introOverlay.style.width = '100%';
+        this.introOverlay.style.height = '100%';
+        this.introOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+        this.introOverlay.style.color = 'white';
+        this.introOverlay.style.display = 'flex';
+        this.introOverlay.style.flexDirection = 'column';
+        this.introOverlay.style.justifyContent = 'center';
+        this.introOverlay.style.alignItems = 'center';
+        this.introOverlay.style.fontSize = '2em';
+        this.introOverlay.style.zIndex = '1000'; // Make sure it overlays everything
+
+        const instructions = document.createElement('div');
+        instructions.innerText = 'How to Play: \n- Use keys A, S, D, F, G to play notes \n- Press J or K at the same time to strum them\n\nPress any key to continue...';
+        instructions.style.textAlign = 'center';
+        instructions.style.marginBottom = '20px';
+
+        this.introOverlay.appendChild(instructions);
+        document.body.appendChild(this.introOverlay);
+
+        // Add an event listener to remove the overlay on key press
+        const removeIntroOverlay = () => {
+            document.body.removeChild(this.introOverlay);
+            window.removeEventListener('keydown', removeIntroOverlay);
+            this.isPaused = false;
+            this.startGameLoop(); // Start the game after the overlay is removed
+        };
+
+        window.addEventListener('keydown', removeIntroOverlay);
     }
 
     setupFretboard(width, height, textureFile, numLanes) {
@@ -384,9 +410,29 @@ export default class GameManager {
     startGame() {
         // this.test1();
         // this.test2();
+        
+        
+        // Render everything on background
+        // this.scene.background = new THREE.Color( 0xffffff );
+        console.log(this.scene.background)
+        this.renderer.render(this.scene, this.camera);
+        this.isPaused = true;
 
-        this.audioManager.startAudioSequence(NoteManager.introMeasures, this.noteManager.measureDuration);
-        this.startGameLoop();
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            this.camera.aspect = window.innerWidth / window.innerHeight;
+            this.camera.updateProjectionMatrix();
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
+            this.fretboard.fireEffects.forEach(fireEffect => {
+                fireEffect.material.setPerspective(this.camera.fov, window.innerHeight);
+            });
+            if (this.isPaused) {
+                this.renderer.render(this.scene, this.camera);
+            }
+        });
+
+        // Add intro overlay that will run gameLoop
+        this.createIntroOverlay();
     }
 
     test1() {
@@ -443,6 +489,7 @@ export default class GameManager {
     }
 
     startGameLoop() {
+        this.audioManager.startAudioSequence(NoteManager.introMeasures, this.noteManager.measureDuration);
         this.gameLoop();
     }
 }

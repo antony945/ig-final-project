@@ -13,7 +13,7 @@ export default class BackgroundManager {
         if (useVideo) {
             this.initBackgroundPlane(videoUrl);
         } else {
-            this.loadBackgroundTexture();
+            this.loadBackgroundTexture(this.img);
         }
         this.initGUI();
     }
@@ -50,14 +50,13 @@ export default class BackgroundManager {
         this.scene.add(plane);
     }
 
-    loadBackgroundTexture() {
+    loadBackgroundTexture(img) {
         const loader = new THREE.TextureLoader();
-        loader.load(this.img, texture => {
+        loader.load(img, texture => {
             texture.minFilter = THREE.LinearFilter;
             texture.magFilter = THREE.NearestFilter;
             this.scene.background = texture;
         });
-
     }
 
     initGUI() {

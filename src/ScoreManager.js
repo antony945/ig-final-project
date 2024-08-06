@@ -241,9 +241,10 @@ export default class ScoreManager {
         }
 
         // If we were in the star power we must deactivate it
-        if (this.starPower) {
-            this.deactivateStarPower();
-        }
+        // NO! GH lets you in star power eventhough you miss
+        // if (this.starPower) {
+        //     this.deactivateStarPower();
+        // }
 
         this.resetStreak();
 
