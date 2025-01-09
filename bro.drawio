@@ -1,0 +1,47 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.0.0" version="24.7.10">
+  <diagram name="Page-1" id="ktXATYHVOsPjLbQPjPeB">
+    <mxGraphModel dx="764" dy="492" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="sN22dA1aG2VpVcnCPxso-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="sN22dA1aG2VpVcnCPxso-1" target="sN22dA1aG2VpVcnCPxso-3" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="550" y="560" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sN22dA1aG2VpVcnCPxso-6" value="Heuristic Evaluation" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="sN22dA1aG2VpVcnCPxso-2" vertex="1" connectable="0">
+          <mxGeometry x="-0.075" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sN22dA1aG2VpVcnCPxso-1" value="Prototype Zero" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="490" y="400" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sN22dA1aG2VpVcnCPxso-5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="sN22dA1aG2VpVcnCPxso-3" target="sN22dA1aG2VpVcnCPxso-4" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sN22dA1aG2VpVcnCPxso-7" value="Think Aloud" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="sN22dA1aG2VpVcnCPxso-5" vertex="1" connectable="0">
+          <mxGeometry y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pGKwbWwvT6iM-cd41y3y-2" value="Controlled Experiment" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="sN22dA1aG2VpVcnCPxso-5">
+          <mxGeometry y="-1" relative="1" as="geometry">
+            <mxPoint x="1" y="114" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sN22dA1aG2VpVcnCPxso-3" value="Prototype One" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="490" y="502.94" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pGKwbWwvT6iM-cd41y3y-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="sN22dA1aG2VpVcnCPxso-4">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="550.1176470588236" y="690" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sN22dA1aG2VpVcnCPxso-4" value="Prototype Two&lt;div&gt;(Final)&lt;/div&gt;" style="whiteSpace=wrap;html=1;rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="490" y="610" width="120" height="60" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
